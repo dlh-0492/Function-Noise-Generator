@@ -1,0 +1,869 @@
+<!DOCTYPE html>
+
+<html dir="ltr" lang="en">
+    <head>
+        <title>Function and Noise Generator</title>
+
+        <meta http-equiv="CONTENT-TYPE" content="text/html; charset=UTF-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="ROBOTS" content="index, nofollow" />
+        <meta name="GOOGLEBOT" content="noindex, nofollow" />
+        <meta name="VIEWPORT" content="width=device-width, initial-scale=1" />
+
+        <style type="text/css">
+        .AA 
+        {
+            width: 100%;
+            height: 100%;
+            text-align: center;
+        }
+
+        .DEKU
+        {
+            font-family: Arial;
+        }
+
+        span.SPACER
+        {
+            display: inline-block; 
+            clear: left; 
+            text-align: left;
+        }
+
+        span.TRIG_LAB
+        {
+            display: inline-block;
+            height: 20px;
+            background: #CCCCCC;
+            color: #FF0000;
+            font-weight: bold;
+        }
+
+        .slidecontainer
+        {
+            width: 98%;
+        }
+
+        .selector_box
+        {
+            font-size: 12px;
+            height: 70px;
+            font-weight: 500;
+            text-align: left;
+            vertical-align: top;
+        }
+
+        .DEKU
+        {
+            text-align: center;
+            font-weight: bold;
+            font-size: 32px;
+        }
+
+        .wave_selector
+        {
+            width: 100px;
+        }
+
+        .noise_selector
+        {
+            width: 100px;
+            height: 32px;
+        }
+        </style>
+        <style type="text/css">
+        input[type="range"]
+        {
+            -webkit-appearance: none;
+            margin: 18px 0;
+            width: 100%;
+        }
+
+        input[type="range"]:focus
+        {
+            outline: none;
+        }
+
+        input[type="range"]::-webkit-slider-runnable-track
+        {
+            width: 100%;
+            height: 8.4px;
+            cursor: pointer;
+            box-shadow: 1px 1px 1px #000000, 0px 0px 1px #0d0d0d;
+            background: #00AA00;
+            border-radius: 1.3px;
+            border: 0.2px solid #010101;
+        }
+
+        input[type="range"]::-webkit-slider-thumb
+        {
+            box-shadow: 1px 1px 1px #000000, 0px 0px 1px #0d0d0d;
+            border: 1px solid #000000;
+            height: 36px;
+            width: 16px;
+            border-radius: 3px;
+            background: #ffffff;
+            cursor: pointer;
+            -webkit-appearance: none;
+            margin-top: -14px;
+        }
+
+        input[type="range"]:focus::-webkit-slider-runnable-track
+        {
+            background: #00AA00;
+        }
+
+        input[type="range"]::-moz-range-track
+        {
+            width: 100%;
+            height: 8.4px;
+            cursor: pointer;
+            box-shadow: 1px 1px 1px #000000, 0px 0px 1px #0d0d0d;
+            background: #00AA00;
+            border-radius: 1.3px;
+            border: 0.2px solid #010101;
+        }
+
+        input[type="range"]::-moz-range-thumb
+        {
+            box-shadow: 1px 1px 1px #000000, 0px 0px 1px #0d0d0d;
+            border: 1px solid #000000;
+            height: 36px;
+            width: 16px;
+            border-radius: 3px;
+            background: #ffffff;
+            cursor: pointer;
+        }
+
+        input[type="range"]::-ms-track
+        {
+            width: 100%;
+            height: 8.4px;
+            cursor: pointer;
+            background: transparent;
+            border-color: transparent;
+            border-width: 16px 0;
+            color: transparent;
+        }
+
+        input[type="range"]::-ms-fill-lower
+        {
+            background: #00AA00;
+            border: 0.2px solid #010101;
+            border-radius: 2.6px;
+            box-shadow: 1px 1px 1px #000000, 0px 0px 1px #0d0d0d;
+        }
+        
+        input[type="range"]::-ms-fill-upper
+        {
+            background: #00AA00;
+            border: 0.2px solid #010101;
+            border-radius: 2.6px;
+            box-shadow: 1px 1px 1px #000000, 0px 0px 1px #0d0d0d;
+        }
+
+        input[type="range"]::-ms-thumb
+        {
+            box-shadow: 1px 1px 1px #000000, 0px 0px 1px #0d0d0d;
+            border: 1px solid #000000;
+            height: 36px;
+            width: 16px;
+            border-radius: 3px;
+            background: #ffffff;
+            cursor: pointer;
+        }
+
+        input[type="range"]:focus::-ms-fill-lower
+        {
+            background: #00AA00;
+        }
+
+        input[type="range"]:focus::-ms-fill-upper
+        {
+            background: #00AA00;
+        }
+        </style>
+        
+        <script type="text/javascript" src="jquery.min.js"></script>
+        <script type="text/javascript">
+        //<![CDATA[
+        
+        var white_type = 0;
+        var pink_clipping = 0;
+        var brown_clipping = 0;
+        var AudioContext = (window.AudioContext || window.webkitAudioContext || window.mozAudioContext || window.oAudioContext || window.msAudioContext);
+        
+        function hard_clip_normalise(s, t_high, t_low)
+        {
+            if (t_high < 0)
+            {
+                t_high *= -1;
+            }
+
+            if (t_low > 0)
+            {
+                t_low *= -1;
+            }
+
+            if (s > t_high)
+            {
+                s = t_high;
+            }
+            else if (s < t_low)
+            {
+                s = t_low;
+            }
+
+            s *= 1 / Math.max(t_high, t_low);
+
+            return s;
+        }
+        
+        if (AudioContext)
+        {
+            var actx = new AudioContext();
+            var masterNode = actx.createGain();
+            masterNode.gain.value = 1;
+
+            // Oscillator
+            var oscil = actx.createOscillator();
+            var oscNode = actx.createGain();
+            var oscOutNode = actx.createGain();
+            oscNode.gain.value = 0.5;
+            oscOutNode.gain.value = 0;
+
+            oscil.type = "sine";
+            oscil.frequency.setValueAtTime(440, actx.currentTime); // value in hertz
+            oscil.connect(oscNode);
+            oscNode.connect(oscOutNode);
+            oscOutNode.connect(masterNode);
+            oscil.start();
+
+            var defaultBufferSize = 16384;
+            var MAX_GAIN = 1;
+            
+            // Begin Noise.js
+            
+            /**
+             * The MIT License (MIT)
+             *
+             * Copyright (C) 2013 Zach Denton
+             * 
+             * Permission is hereby granted, free of charge, to any person obtaining a copy of
+             * this software and associated documentation files (the "Software"), to deal in
+             * the Software without restriction, including without limitation the rights to
+             * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+             * the Software, and to permit persons to whom the Software is furnished to do so,
+             * subject to the following conditions:
+             * 
+             * The above copyright notice and this permission notice shall be included in all
+             * copies or substantial portions of the Software.
+             * 
+             * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+             * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
+             * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+             * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
+             * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
+             * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+             * 
+             * (The script here has been modified from the original)
+             * Source: http://www.github.com/zacharydenton/noise.js
+             */
+
+            (function(AudioContext, bufferSize, b, r, y, n) {
+                AudioContext.prototype.createWhiteNoise = function() {
+                    /**
+                     * Generate white noise
+                     */
+                    var node = this.createScriptProcessor(bufferSize, b, r);
+                    node.onaudioprocess = function(e) {
+                        var output = e.outputBuffer.getChannelData(0);
+
+                        for (var i = 0; i < bufferSize; i++)
+                        {
+                            var white = Math.random() * 2 - 1;
+                            switch (white_type)
+                            {
+                                case 0:
+                                    output[i] = white;
+                                break;
+                                case 1:
+                                    output[i] = ((white >= 0) ? 1 : -1);
+                                break;
+                                case 2:
+                                    output[i] = Math.floor(Math.random() * 3) - 1;
+                                break;
+                            }
+                        }
+                    };
+
+                    return node;
+                };
+
+                AudioContext.prototype.createPinkNoise = function() {
+                    /**
+                     * Generate pink noise
+                     */
+                    var b0 = y, b1 = y, b2 = y, b3 = y, b4 = y, b5 = y, b6 = y;
+                    var node = this.createScriptProcessor(bufferSize, b, r);
+                    node.onaudioprocess = function(e) {
+                        var output = e.outputBuffer.getChannelData(0);
+
+                        for (var i = 0; i < bufferSize; i++) 
+                        {
+                            var white = Math.random() * 2 - 1;
+
+                            // Filter to approximate 10 dB per decade
+                            b0 = 0.99886 * b0 + white * 0.0555179;
+                            b1 = 0.99332 * b1 + white * 0.0750759;
+                            b2 = 0.96900 * b2 + white * 0.1538520;
+                            b3 = 0.86650 * b3 + white * 0.3104856;
+                            b4 = 0.55000 * b4 + white * 0.5329522;
+                            b5 = -0.76162 * b5 - white * 0.0168980;
+                            var s = (b0 + b1 + b2 + b3 + b4 + b5 + b6 + white * 0.5362) * 0.15; // Roughly compensate for gain
+                            b6 = white * 0.115926;
+
+                            switch (pink_clipping)
+                            {
+                                case 0:
+                                    output[i] = s;
+                                break;
+                                case 1:
+                                    output[i] = hard_clip_normalise(s, 1 / Math.sqrt(2), -1 / Math.sqrt(2));
+                                break;
+                                case 2:
+                                    output[i] = hard_clip_normalise(s, 0.5, -0.5);
+                                break;
+                                case 3:
+                                    output[i] = hard_clip_normalise(s, -0.25, 0.25);
+                                break;
+                                default:
+                                break;
+                            }
+                        }
+                    };
+
+                    return node;
+                };
+
+                AudioContext.prototype.createBrownNoise = function() {
+                    /**
+                     * Generate Brownian noise 
+                     */
+                    var node = this.createScriptProcessor(bufferSize, b, r);
+                    node.onaudioprocess = function(e) {
+                        var output = e.outputBuffer.getChannelData(0);
+                        var leakage = (((1 - 144.0 / actx.sampleRate) < 0.9999) ? (1 - 144.0 / actx.sampleRate) : 0.9999);
+                        var scaling = ((9.0 / Math.sqrt(actx.sampleRate) > 0.01) ? (9.0 / Math.sqrt(actx.sampleRate)) : 0.01);
+                        var s = 0;
+
+                        for (var i = 0; i < bufferSize; i++)
+                        {
+                            var white = Math.random() * 2 - 1;
+                            var z = leakage * s + white * scaling;
+                            s = ((Math.abs(z) > 1.0) ? (leakage * s - white * scaling) : z);
+
+                            switch (brown_clipping)
+                            {
+                                case 0:
+                                    output[i] = s;
+                                break;
+                                case 1:
+                                    output[i] = hard_clip_normalise(s, 1 / Math.sqrt(2), -1 / Math.sqrt(2));
+                                break;
+                                case 2:
+                                    output[i] = hard_clip_normalise(s, 0.5, -0.5);
+                                break;
+                                case 3:
+                                    output[i] = hard_clip_normalise(s, -0.25, 0.25);
+                                break;
+                                default:
+                                break;
+                            }
+                        }
+                    };
+
+                    return node;
+                };
+            })(AudioContext, defaultBufferSize, 1, 1, 0, 0);
+
+            // End Noise.js
+            
+            // Set up gain and switch nodes
+            var noiseNode = actx.createGain();
+            var noiseOutNode = actx.createGain();
+
+            // Set up white noise 
+            var whiteNoise = actx.createWhiteNoise(defaultBufferSize, false);
+            var whiteGain = actx.createGain();
+            whiteGain.gain.value = 1;
+            whiteNoise.connect(whiteGain).connect(noiseNode);
+
+            // Set up pink noise 
+            var pinkNoise = actx.createPinkNoise(defaultBufferSize);
+            var pinkGain = actx.createGain();
+            pinkGain.gain.value = 0;
+            pinkNoise.connect(pinkGain).connect(noiseNode);
+
+            // Set up Brownian noise 
+            var brownNoise = actx.createBrownNoise(defaultBufferSize);
+            var brownGain = actx.createGain();
+            brownGain.gain.value = 0;
+            brownNoise.connect(brownGain).connect(noiseNode);
+
+            // Mute output gain initially
+            noiseNode.gain.value = 0.5;
+            noiseOutNode.gain.value = 0;
+            noiseNode.connect(noiseOutNode);
+
+            // Subsonic filter
+            var hpf = actx.createBiquadFilter();
+            hpf.type = "highpass";
+            hpf.frequency.setValueAtTime(20, actx.currentTime);
+            hpf.Q.setValueAtTime(1 / Math.sqrt(2), actx.currentTime);
+
+            noiseOutNode.connect(hpf).connect(masterNode).connect(actx.destination);
+        }
+
+        //]]>
+        </script>
+        <script type="text/javascript">
+        //<![CDATA[
+        
+        $(document).ready(function() {
+            function tglc(nd, btn_id)
+            {
+                var btn = document.getElementById(btn_id);
+                var t = actx.currentTime;
+
+                if (!nd.gain.value)
+                {
+                    nd.gain.value = 1;
+                    btn.style.color = "#00AA00";
+                    btn.innerText = "ON";
+                }
+                else
+                {
+                    nd.gain.value = 0;
+                    btn.style.color = "#FF0000";
+                    btn.innerText = "OFF";
+                }
+            }
+            
+            $("#sound_srate").html(actx.sampleRate);
+
+            var ops = $("OPTION");
+            
+            // Black key / White key distinction
+            for (var i = 0; i < ops.length; i++)
+            {
+                var el = ops[i];
+                var num = parseInt(el.value, 10);
+                ([0, 2, 5, 7, 10].indexOf(Math.abs(num) % 12) >= 0) && el.setAttribute("style", "background: #000000; color: #FFFFFF;");
+            }
+
+            $("#SELECTORS").on("click", function(evt) {
+                let tgt = evt.target;
+
+                if (tgt.tagName === "INPUT")
+                {
+                    switch (tgt.id)
+                    {
+                        // Waveform channels
+                        case "sine_button":
+                            oscil.type = "sine";
+                        break;
+                        case "triangle_button":
+                            oscil.type = "triangle";
+                        break;
+                        case "square_button":
+                            oscil.type = "square";
+                        break;
+                        case "saw_button":
+                            oscil.type = "sawtooth";
+                        break;
+                        default:
+                            whiteGain.gain.value = ((tgt.id === "white_noise") ? 1 : 0);
+                            pinkGain.gain.value = ((tgt.id === "pink_noise") ? 1 : 0);
+                            brownGain.gain.value = ((tgt.id === "brown_noise") ? 1 : 0);
+                        break;
+                    }
+                }
+                else
+                {
+                    return;
+                }
+            });
+
+            $("#TYPE_SELECTORS").on("change", function(evt) {
+                let tgt = evt.target;
+
+                switch (tgt.id)
+                {
+                    case "freq":
+                    (function() {
+                        if (!isEvaluable(this.value))
+                        {
+                            alert("Please enter a NUMBER.");
+                        }
+                        else if (isEvaluable(this.value) && (this.value <= 1))
+                        {
+                            alert("Frequency must be at least 1 Hz and must be positive. ");
+                        }
+                        else if (isEvaluable(this.value) && (this.value > (actx.sampleRate / 2)) && (oscil.type === "sine"))
+                        {
+                            alert("Maximum sine frequency is " + actx.sampleRate / 2 + " Hz.");
+                        }
+                        else if (isEvaluable(this.value) && (this.value > (actx.sampleRate / 4)) && (oscil.type !== "sine"))
+                        {
+                            alert("Maximum frequency is " + actx.sampleRate / 4 + " Hz. ");
+                        }
+                        else
+                        {
+                            oscil.frequency.setValueAtTime(tgt.value, actx.currentTime);
+                        }
+                    })();
+                    break;
+                    case "key_num":
+                    (function() {
+                        if (!isEvaluable(tgt.value))
+                        {
+                            $("#freq").attr("disabled", false);
+                        }
+                        else
+                        {
+                            var f = parseFloat($("#key_num").children("option:selected").attr("data-freq"));
+                            $("#freq").attr("disabled", true).val(f);
+                            oscil.frequency.setValueAtTime(f, actx.currentTime);
+                        }
+                    })();
+                    break;
+                }
+            });
+
+            $("#TYPE_SELECTORS").on("click", function(evt) {
+                let tgt = evt.target;
+
+                switch (tgt.id)
+                {   // Switch between random, binary, and ternary noise
+                    case "rand_white":
+                    white_type = 0;
+                    break;
+                    case "binary_white":
+                    white_type = 1;
+                    break;
+                    case "ternary_white":
+                    white_type = 2;
+                    break;
+
+                    // Set clipping threshold for pink noise and Brownian noise
+                    case "unclip":
+                    pink_clipping = 0;
+                    brown_clipping = 0;
+                    break;
+                    case "clip_3db":
+                    pink_clipping = 1;
+                    brown_clipping = 1;
+                    break;
+                    case "clip_6db":
+                    pink_clipping = 2;
+                    brown_clipping = 2;
+                    break;
+                    case "clip_12db":
+                    pink_clipping = 3;
+                    brown_clipping = 3;
+                    break;
+                }
+            });
+
+            $("#SWITCHES").on("click", function(evt) {
+                let tgt = evt.target;
+                var oscvol = document.getElementById("osc_vol");
+                var noisevol = document.getElementById("noise_vol");
+
+                actx.resume().then(() => {
+                    if (["oscillator_switch", "OSC_TRIG_LAB"].indexOf(tgt.id) >= 0)
+                    {
+                        tglc(oscOutNode, "OSC_TRIG_LAB");
+                    }
+                    else if (["noise_switch", "NOISE_TRIG_LAB"].indexOf(tgt.id) >= 0)
+                    {
+                        tglc(noiseOutNode, "NOISE_TRIG_LAB");
+                    }
+                    else
+                    {
+                        return;
+                    }
+                });
+            });
+
+            $("#osc_vol").on("input", function() {
+                oscNode.gain.value = this.value / this.max * MAX_GAIN;
+            });
+
+            $("#noise_vol").on("input", function() {
+                noiseNode.gain.value = this.value / this.max * MAX_GAIN;
+            });
+        });
+        
+        //]]>
+        </script>
+    </head>
+    <body style="font-family: Arial; text-align: left;">
+        <div id="ContentWrapper">
+            <div class="AA">
+                <span class="DEKU" id="TOP">Function and Noise Generator</span>
+                <div>
+                    <table id="GENERATOR" style="background: #FFFFFF;" cellspacing="0" cellpadding="1" border="1" align="center">
+                        <tbody>
+                            <tr>
+                                <th colspan="4" style="height: 25px; font-size: 18px;">Waveform</th>
+                                <td style="background: #000000; width: 10px;" rowspan="5">&nbsp;</td>
+                                <th colspan="3" style="height: 25px; font-size: 18px;">Noise</th>
+                            </tr>
+                            <tr id="SELECTORS" style="text-align: left;">
+                                <td class="wave_selector">
+                                    <input type="radio" name="waveform" id="sine_button" value="sine" checked />
+                                    <label for="sine_button">Sine</label>
+                                </td>
+                                <td class="wave_selector">
+                                    <input type="radio" name="waveform" id="triangle_button" value="triangle" />
+                                    <label for="triangle_button">Triangle</label>
+                                </td>
+                                <td class="wave_selector">
+                                    <input type="radio" name="waveform" id="square_button" value="square" />
+                                    <label for="square_button">Square</label>
+                                </td>
+                                <td class="wave_selector">
+                                    <input type="radio" name="waveform" id="saw_button" value="sawtooth" />
+                                    <label for="saw_button">Sawtooth</label>
+                                </td>
+                                <td class="noise_selector">
+                                    <input type="radio" name="noise" id="white_noise" checked />
+                                    <label for="white_noise">White</label>
+                                </td>
+                                <td class="noise_selector">
+                                    <input type="radio" name="noise" id="pink_noise" />
+                                    <label for="pink_noise" style="color: rgb(255, 0, 255);">Pink</label>
+                                </td>
+                                <td class="noise_selector">
+                                    <input type="radio" name="noise" id="brown_noise" />
+                                    <label for="brown_noise" style="color: rgb(123, 63, 0);">Brownian</label>
+                                </td>
+                            </tr>
+                            <tr id="TYPE_SELECTORS">
+                                <td colspan="2">
+                                    <span style="height: 24px;">Frequency, Hz</span>
+                                    <input type="text" id="freq" value="440" />
+                                </td>
+                                <td colspan="2">
+                                    <span style="height: 24px;">Piano Key</span><BR />
+                                    <select id="key_num">
+                                        <option value="NA">Text Input</option>
+                                        <option value="-11" data-freq="13.75">(-11) A-1</option>
+                                        <option value="-10" data-freq="14.568">(-10) A&#x266F;-1 / B&#x266D;-1</option>
+                                        <option value="-9" data-freq="15.434">(-9) B-1</option>
+                                        <option value="-8" data-freq="16.352">(-8) C0</option>
+                                        <option value="-7" data-freq="17.324">(-7) C&#x266F;0 / D&#x266D;0</option>
+                                        <option value="-6" data-freq="18.354">(-6) D0</option>
+                                        <option value="-5" data-freq="19.445">(-5) D&#x266F;0 / E&#x266D;0</option>
+                                        <option value="-4" data-freq="20.602">(-4) E0</option>
+                                        <option value="-3" data-freq="21.827">(-3) F0</option>
+                                        <option value="-2" data-freq="23.125">(-2) F&#x266F;0 / G&#x266D;0</option>
+                                        <option value="-1" data-freq="24.5">(-1) G0</option>
+                                        <option value="0" data-freq="25.956">(0) G&#x266F;0 / A&#x266D;0</option>
+                                        <option value="1" data-freq="27.5">(1) A0</option>
+                                        <option value="2" data-freq="29.135">(2) A&#x266F;0 / B&#x266D;0</option>
+                                        <option value="3" data-freq="30.868">(3) B0</option>
+                                        <option value="4" data-freq="32.703">(4) C1</option>
+                                        <option value="5" data-freq="34.648">(5) C&#x266F;1 / D&#x266D;1</option>
+                                        <option value="6" data-freq="36.708">(6) D1</option>
+                                        <option value="7" data-freq="38.891">(7) D&#x266F;1 / E&#x266D;1</option>
+                                        <option value="8" data-freq="41.203">(8) E1</option>
+                                        <option value="9" data-freq="43.653">(9) F1</option>
+                                        <option value="10" data-freq="46.25">(10) F&#x266F;1 / G&#x266D;1</option>
+                                        <option value="11" data-freq="49">(11) G1</option>
+                                        <option value="12" data-freq="51.913">(12) G&#x266F;1 / A&#x266D;1</option>
+                                        <option value="13" data-freq="55">(13) A1</option>
+                                        <option value="14" data-freq="58.27">(14) A&#x266F;1 / B&#x266D;1</option>
+                                        <option value="15" data-freq="61.735">(15) B1</option>
+                                        <option value="16" data-freq="65.406">(16) C2</option>
+                                        <option value="17" data-freq="69.296">(17) C&#x266F;2 / D&#x266D;2</option>
+                                        <option value="18" data-freq="73.416">(18) D2</option>
+                                        <option value="19" data-freq="77.782">(19) D&#x266F;2 / E&#x266D;2</option>
+                                        <option value="20" data-freq="82.406">(20) E2</option>
+                                        <option value="21" data-freq="87.307">(21) F2</option>
+                                        <option value="22" data-freq="92.5">(22) F&#x266F;2 / G&#x266D;2</option>
+                                        <option value="23" data-freq="98">(23) G2</option>
+                                        <option value="24" data-freq="103.826">(24) G&#x266F;2 / A&#x266D;2</option>
+                                        <option value="25" data-freq="110">(25) A2</option>
+                                        <option value="26" data-freq="116.541">(26) A&#x266F;2 / B&#x266D;2</option>
+                                        <option value="27" data-freq="123.471">(27) B2</option>
+                                        <option value="28" data-freq="130.813">(28) C3</option>
+                                        <option value="29" data-freq="138.591">(29) C&#x266F;3 / D&#x266D;3</option>
+                                        <option value="30" data-freq="146.832">(30) D3</option>
+                                        <option value="31" data-freq="155.563">(31) D&#x266F;3 / E&#x266D;3</option>
+                                        <option value="32" data-freq="164.814">(32) E3</option>
+                                        <option value="33" data-freq="174.614">(33) F3</option>
+                                        <option value="34" data-freq="185">(34) F&#x266F;3 / G&#x266D;3</option>
+                                        <option value="35" data-freq="196">(35) G3</option>
+                                        <option value="36" data-freq="207.652">(36) G&#x266F;3 / A&#x266D;3</option>
+                                        <option value="37" data-freq="220">(37) A3</option>
+                                        <option value="38" data-freq="233.082">(38) A&#x266F;3 / B&#x266D;3</option>
+                                        <option value="39" data-freq="246.942">(39) B3</option>
+                                        <option value="40" data-freq="261.626">(40) C4</option>
+                                        <option value="41" data-freq="277.183">(41) C&#x266F;4 / D&#x266D;4</option>
+                                        <option value="42" data-freq="293.665">(42) D4</option>
+                                        <option value="43" data-freq="311.127">(43) D&#x266F;4 / E&#x266D;4</option>
+                                        <option value="44" data-freq="329.628">(44) E4</option>
+                                        <option value="45" data-freq="349.228">(45) F4</option>
+                                        <option value="46" data-freq="370">(46) F&#x266F;4 / G&#x266D;4</option>
+                                        <option value="47" data-freq="392">(47) G4</option>
+                                        <option value="48" data-freq="415.305">(48) G&#x266F;4 / A&#x266D;4</option>
+                                        <option value="49" data-freq="440">(49) A4</option>
+                                        <option value="50" data-freq="466.164">(50) A&#x266F;4 / B&#x266D;4</option>
+                                        <option value="51" data-freq="493.883">(51) B4</option>
+                                        <option value="52" data-freq="523.251">(52) C5</option>
+                                        <option value="53" data-freq="554.365">(53) C&#x266F;5 / D&#x266D;5</option>
+                                        <option value="54" data-freq="587.33">(54) D5</option>
+                                        <option value="55" data-freq="622.254">(55) D&#x266F;5 / E&#x266D;5</option>
+                                        <option value="56" data-freq="659.255">(56) E5</option>
+                                        <option value="57" data-freq="698.456">(57) F5</option>
+                                        <option value="58" data-freq="740">(58) F&#x266F;5 / G&#x266D;5</option>
+                                        <option value="59" data-freq="784">(59) G5</option>
+                                        <option value="60" data-freq="830.609">(60) G&#x266F;5 / A&#x266D;5</option>
+                                        <option value="61" data-freq="880">(61) A5</option>
+                                        <option value="62" data-freq="932.328">(62) A&#x266F;5 / B&#x266D;5</option>
+                                        <option value="63" data-freq="987.767">(63) B5</option>
+                                        <option value="64" data-freq="1046.502">(64) C6</option>
+                                        <option value="65" data-freq="1108.731">(65) C&#x266F;6 / D&#x266D;6</option>
+                                        <option value="66" data-freq="1174.659">(66) D6</option>
+                                        <option value="67" data-freq="1244.507">(67) D&#x266F;6 / E&#x266D;6</option>
+                                        <option value="68" data-freq="1318.51">(68) E6</option>
+                                        <option value="69" data-freq="1396.913">(69) F6</option>
+                                        <option value="70" data-freq="1480">(70) F&#x266F;6 / G&#x266D;6</option>
+                                        <option value="71" data-freq="1568">(71) G6</option>
+                                        <option value="72" data-freq="1661.219">(72) G&#x266F;6 / A&#x266D;6</option>
+                                        <option value="73" data-freq="1760">(73) A6</option>
+                                        <option value="74" data-freq="1864.655">(74) A&#x266F;6 / B&#x266D;6</option>
+                                        <option value="75" data-freq="1975.533">(75) B6</option>
+                                        <option value="76" data-freq="2093.005">(76) C7</option>
+                                        <option value="77" data-freq="2217.461">(77) C&#x266F;7 / D&#x266D;7</option>
+                                        <option value="78" data-freq="2349.318">(78) D7</option>
+                                        <option value="79" data-freq="2489.016">(79) D&#x266F;7 / E&#x266D;7</option>
+                                        <option value="80" data-freq="2637.02">(80) E7</option>
+                                        <option value="81" data-freq="2793.826">(81) F7</option>
+                                        <option value="82" data-freq="2960">(82) F&#x266F;7 / G&#x266D;7</option>
+                                        <option value="83" data-freq="3136">(83) G7</option>
+                                        <option value="84" data-freq="3322.438">(84) G&#x266F;7 / A&#x266D;7</option>
+                                        <option value="85" data-freq="3520">(85) A7</option>
+                                        <option value="86" data-freq="3729.31">(86) A&#x266F;7 / B&#x266D;7</option>
+                                        <option value="87" data-freq="3951.066">(87) B7</option>
+                                        <option value="88" data-freq="4186.009">(88) C8</option>
+                                        <option value="89" data-freq="4432.922">(89) C&#x266F;8 / D&#x266D;8</option>
+                                        <option value="90" data-freq="4698.636">(90) D8</option>
+                                        <option value="91" data-freq="4978.032">(91) D&#x266F;8 / E&#x266D;8</option>
+                                        <option value="92" data-freq="5274.041">(92) E8</option>
+                                        <option value="93" data-freq="5587.652">(93) F8</option>
+                                        <option value="94" data-freq="5920">(94) F&#x266F;8 / G&#x266D;8</option>
+                                        <option value="95" data-freq="6272">(95) G8</option>
+                                        <option value="96" data-freq="6644.875">(96) G&#x266F;8 / A&#x266D;8</option>
+                                        <option value="97" data-freq="7040">(97) A8</option>
+                                        <option value="98" data-freq="7458.62">(98) A&#x266F;8 / B&#x266D;8</option>
+                                        <option value="99" data-freq="7902.133">(99) B8</option>
+                                        <option value="100" data-freq="8372.018">(100) C8</option>
+                                    </select>
+                                </td>
+                                <td id="NOISETYPE_SELECTORS" class="selector_box">
+                                    <span class="SPACER" style="width: 22px;">&nbsp;</span>
+                                    <span id="noise_info">Noise Type:</span><BR />
+                                    <span>
+                                        <span class="SPACER" style="width: 22px;">
+                                            <input type="radio" name="type" id="rand_white" checked />
+                                        </span>
+                                        <label for="rand_white">Random</label>
+                                    </span><BR />
+                                    <span>
+                                        <span class="SPACER" style="width: 22px;">
+                                            <input type="radio" name="type" id="binary_white" />
+                                        </span>
+                                        <label for="binary_white">Bi-State</label>
+                                    </span><BR />
+                                    <span>
+                                        <span class="SPACER" style="width: 22px;">
+                                            <input type="radio" name="type" id="ternary_white" />
+                                        </span>
+                                        <label for="ternary_white">Tri-State</label>
+                                    </span>
+                                </td>
+                                <td id="CLIPPING_SELECTORS" class="selector_box" colspan="2" style="text-align: center;">
+                                    <span style="display: inline-block; text-align: left;">
+                                        <span class="SPACER" style="width: 22px;">&nbsp;</span>
+                                        <span id="noise_info">Clipping:</span><BR />
+                                        <span>
+                                            <span class="SPACER" style="width: 22px;">
+                                                <input type="radio" name="clip" id="unclip" checked />
+                                            </span>
+                                            <label for="unclip">None</label>
+                                        </span><BR />
+                                        <span>
+                                            <span class="SPACER" style="width: 22px;">
+                                                <input type="radio" name="clip" id="clip_3db" />
+                                            </span>
+                                            <label for="clip_3db">&minus;3 dB</label>
+                                        </span><BR />
+                                        <span>
+                                            <span class="SPACER" style="width: 22px;">
+                                                <input type="radio" name="clip" id="clip_6db" />
+                                            </span>
+                                            <label for="clip_6db">&minus;6 dB</label>
+                                        </span><BR />
+                                        <span>
+                                            <span class="SPACER" style="width: 22px;">
+                                                <input type="radio" name="clip" id="clip_6db" />
+                                            </span>
+                                            <label for="clip_12db">&minus;12 dB</label>
+                                        </span>
+                                    </span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="4" style="font-size: 6px;">
+                                    <BR />
+                                    <span id="vol_text" style="font-size: 14px;">Tone Volume</span><BR /><BR /><BR />
+                                    <span class="slidecontainer">
+                                        <input type="range" class="slider" id="osc_vol" min="0" max="65536" value="32768" style="width: 98%;"/>
+                                    </span><BR /><BR /><BR />
+                                </td>
+                                <td colspan="3" style="font-size: 6px;">
+                                    <BR />
+                                    <span id="vol_text" style="font-size: 14px;">Noise Volume</span><BR /><BR /><BR />
+                                    <span class="slidecontainer">
+                                        <input type="range" class="slider" id="noise_vol" min="0" max="65536" value="32768" style="width: 98%;" />
+                                    </span><BR /><BR /><BR />
+                                </td>
+                            </tr>
+                            <tr id="SWITCHES">
+                                <td colspan="4">
+                                    <a href="javascript:void(0);" id="oscillator_switch" style="height: 30px; width: 60px;">
+                                        <span class="TRIG_LAB">&nbsp;&nbsp;<span id="OSC_TRIG_LAB">OFF</span>&nbsp;&nbsp;</span>
+                                    </a>
+                                </td>
+                                <td colspan="4">
+                                    <a href="javascript:void(0);" id="noise_switch" style="height: 30px; width: 60px;">
+                                        <span class="TRIG_LAB">&nbsp;&nbsp;<span id="NOISE_TRIG_LAB">OFF</span>&nbsp;&nbsp;</span>
+                                    </a>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="8" style="height: 28px;">
+                                    Operating Sample Rate: <span id="sound_srate"></span> Hz
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>
