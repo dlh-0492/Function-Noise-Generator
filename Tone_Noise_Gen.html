@@ -193,6 +193,20 @@
         var brown_clipping = 0;
         var AudioContext = (window.AudioContext || window.webkitAudioContext || window.mozAudioContext || window.oAudioContext || window.msAudioContext);
         
+        function isEvaluable(str)
+        {
+            try
+            {
+                var x = eval(str);
+            }
+            catch (e)
+            {
+                return false;
+            }
+
+            return true;
+        }
+        
         function hard_clip_normalise(s, t_high, t_low)
         {
             if (t_high < 0)
