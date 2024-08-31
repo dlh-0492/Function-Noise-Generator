@@ -8,19 +8,19 @@
         <meta http-equiv="X-UA-Compatible" content="IE=edge" />
         <meta name="ROBOTS" content="index, nofollow" />
         <meta name="GOOGLEBOT" content="noindex, nofollow" />
-        <meta name="VIEWPORT" content="width=device-width, initial-scale=1" />
 
         <style type="text/css">
+        body
+        {
+            font-family: Helvetica, Helvetica Neue, Arial, sans-serif;
+            text-align: center;
+        }
+        
         .AA 
         {
             width: 100%;
             height: 100%;
             text-align: center;
-        }
-
-        .DEKU
-        {
-            font-family: Arial;
         }
 
         span.SPACER
@@ -58,9 +58,11 @@
             vertical-align: top;
         }
 
-        body
+        .DEKU
         {
-            font-family: Helvetica, Helvetica Neue, Arial, sans-serif;
+            text-align: center;
+            font-weight: bold;
+            font-size: 32px;
         }
 
         .wave_selector
@@ -72,18 +74,6 @@
         {
             width: 100px;
             height: 32px;
-        }
-        
-        span.sqrt > span.sqrt_text
-        {
-            border-top: 1px solid;
-            padding: 0 0.1em;
-            white-space: nowrap;
-        }
-        
-        span.sqrt:before
-        {
-            content: "\221A";
         }
         
         tr.desc
@@ -218,35 +208,62 @@
         <script type="text/javascript">
         //<![CDATA[
         
-        if (typeof(window.jQuery) == "undefined")
+        if (typeof(window.jQuery) === "undefined")
         {
-            document.write("<scr" + "ipt type=\"text/javascript\" src=\"jquery.min.js\">");
-            document.write("</scr" + "ipt>");
+            document.write("<scr" + "ipt type=\"text/javascript\" src=\"jquery.min.js\"></scr" + "ipt>");
         }
-        
+
+        if ((window.MathJax == "undefined") || (typeof(window.MathJax) === "undefined"))
+        {
+            window.MathJax = {
+                tex: {
+                    inlineMath: [["$", "$"], ["\\(", "\\)"], ["[;", ";]"]],
+                    displayMath: [["$$", "$$"], ["\\[", "\\]"]],
+                    processEscapes: true,
+                    processEnvironments: true,
+                    processRefs: true
+                },
+                svg: {
+                    fontCache: "global"
+                }
+            };
+            document.write("<scr" + "ipt type=\"text/javascript\" src=\"MathJax-master/es5/tex-chtml-full.js\"></scr" + "ipt>");
+        }
+
         //]]>
         </script>
+        <script type="text/javascript" src="esdf.js"></script>
         <script type="text/javascript">
         //<![CDATA[
         
+        var using_keys = false;
         var white_type = 0;
         var pink_clipping = 0;
         var brown_clipping = 0;
-        var AudioContext = (window.AudioContext || window.webkitAudioContext || window.mozAudioContext || window.oAudioContext || window.msAudioContext);
         
-        function isEvaluable(str)
-        {
-            try
-            {
-                var x = eval(str);
-            }
-            catch (e)
-            {
-                return false;
-            }
+        // Renaissance tuning (A4 = 466 Hz)
+        const tuning_renaissance = [0, 14.563, 15.428, 16.346, 17.318, 18.348, 19.439, 20.594, 21.819, 23.117, 24.491, 25.947, 27.49, 29.125, 30.857, 32.692, 34.636, 36.695, 38.877, 41.189, 43.638, 46.233, 48.982, 51.895, 54.981, 58.25, 61.714, 65.383, 69.271, 73.39, 77.754, 82.378, 87.276, 92.466, 97.964, 103.79, 109.961, 116.5, 123.427, 130.767, 138.543, 146.781, 155.509, 164.756, 174.553, 184.932, 195.929, 207.579, 219.923, 233, 246.855, 261.534, 277.085, 293.562, 311.018, 329.512, 349.106, 369.864, 391.858, 415.159, 439.845, 466, 493.71, 523.067, 554.171, 587.123, 622.035, 659.024, 698.211, 739.729, 783.715, 830.318, 879.691, 932, 987.42, 1046.135, 1108.341, 1174.246, 1244.071, 1318.047, 1396.422, 1479.458, 1567.431, 1660.635, 1759.382, 1864, 1974.839, 2092.269, 2216.682, 2348.493, 2488.141, 2636.094, 2792.844, 2958.916, 3134.862, 3321.27, 3518.763, 3728, 3949.678, 4184.539, 4433.364, 4696.986, 4976.283, 5272.188, 5585.689, 5917.831, 6269.724, 6642.541, 7037.527, 7456, 7899.357, 8369.077, 8866.728];
 
-            return true;
-        }
+        // Modern stanard concert pitch (A4 = 440 Hz)
+        const tuning_modern = [0, 13.75, 14.568, 15.434, 16.352, 17.324, 18.354, 19.445, 20.602, 21.827, 23.125, 24.5, 25.956, 27.5, 29.135, 30.868, 32.703, 34.648, 36.708, 38.891, 41.203, 43.653, 46.25, 49, 51.913, 55, 58.27, 61.735, 65.406, 69.296, 73.416, 77.782, 82.406, 87.307, 92.5, 98, 103.826, 110, 116.541, 123.471, 130.813, 138.591, 146.832, 155.563, 164.814, 174.614, 185, 196, 207.652, 220, 233.082, 246.942, 261.626, 277.183, 293.665, 311.127, 329.628, 349.228, 370, 392, 415.305, 440, 466.164, 493.883, 523.251, 554.365, 587.33, 622.254, 659.255, 698.456, 740, 784, 830.609, 880, 932.328, 987.767, 1046.502, 1108.731, 1174.659, 1244.507, 1318.51, 1396.913, 1480, 1568, 1661.219, 1760, 1864.655, 1975.533, 2093.005, 2217.461, 2349.318, 2489.016, 2637.02, 2793.826, 2960, 3136, 3322.438, 3520, 3729.31, 3951.066, 4186.009, 4432.922, 4698.636, 4978.032, 5274.041, 5587.652, 5920, 6272, 6644.875, 7040, 7458.62, 7902.133, 8372.018];
+
+        // Scientific tuning (C4 = 256 Hz)
+        const tuning_scientific = [0, 13.454, 14.254, 15.102, 16, 16.951, 17.959, 19.027, 20.159, 21.357, 22.627, 23.973, 25.398, 26.909, 28.509, 30.204, 32, 33.903, 35.919, 38.055, 40.317, 42.715, 45.255, 47.946, 50.797, 53.817, 57.018, 60.408, 64, 67.806, 71.838, 76.109, 80.635, 85.43, 90.51, 95.892, 101.594, 107.635, 114.035, 120.816, 128, 135.611, 143.675, 152.219, 161.27, 170.86, 181.019, 191.783, 203.187, 215.269, 228.07, 241.632, 256, 271.223, 287.35, 304.437, 322.54, 341.719, 362.039, 383.567, 406.375, 430.539, 456.14, 483.264, 512, 542.445, 574.701, 608.874, 645.08, 683.438, 724.077, 767.133, 812.749, 861.078, 912.28, 966.527, 1024, 1084.89, 1149.401, 1217.748, 1290.159, 1366.876, 1448.155, 1534.266, 1625.499, 1722.156, 1824.561, 1933.055, 2048, 2169.78, 2298.802, 2435.496, 2580.318, 2733.752, 2896.309, 3068.533, 3250.997, 3444.312, 3649.121, 3866.109, 4096, 4339.561, 4597.605, 4870.992, 5160.637, 5467.504, 5792.619, 6137.066, 6501.995, 6888.623, 7298.242, 7732.218, 8192];
+
+        // Baroque tuning (A4 = 415 Hz)
+        const tuning_baroque = [0, 12.96875, 13.74, 14.557, 15.423, 16.34, 17.311, 18.341, 19.431, 20.587, 21.811, 23.108, 24.482, 25.9375, 27.48, 29.114, 30.845, 32.679, 34.622, 36.681, 38.862, 41.173, 43.622, 46.215, 48.963, 51.875, 54.96, 58.228, 61.69, 65.358, 69.245, 73.362, 77.725, 82.346, 87.243, 92.431, 97.927, 103.75, 109.919, 116.455, 123.38, 130.717, 138.49, 146.725, 155.449, 164.693, 174.486, 184.861, 195.854, 207.5, 219.839, 232.911, 246.76, 261.434, 276.979, 293.449, 310.899, 329.386, 348.972, 369.723, 391.708, 415, 439.677, 465.822, 493.521, 522.867, 553.959, 586.899, 621.797, 658.771, 697.944, 739.446, 783.416, 830, 879.354, 931.644, 987.042, 1045.734, 1107.917, 1173.797, 1243.595, 1317.543, 1395.888, 1478.892, 1566.831, 1660, 1758.709, 1863.287, 1974.084, 2091.469, 2215.834, 2347.595, 2487.19, 2635.086, 2791.776, 2957.784, 3133.663, 3320, 3517.417, 3726.574, 3948.168, 4182.938, 4431.668, 4695.189, 4974.379, 5270.171, 5583.552, 5915.567, 6267.325, 6640, 7034.835, 7453.148, 7896.335];
+
+        // French Baroque tuning (A4 = 392 Hz)
+        const tuning_french_baroque = [0, 12.25, 12.978, 13.75, 14.568, 15.434, 16.352, 17.324, 18.354, 19.445, 20.602, 21.827, 23.125, 24.5, 25.956, 27.5, 29.135, 30.868, 32.703, 34.648, 36.708, 38.891, 41.203, 43.653, 46.25, 49, 51.913, 55, 58.27, 61.735, 65.406, 69.296, 73.416, 77.782, 82.406, 87.307, 92.5, 98, 103.826, 110, 116.541, 123.471, 130.813, 138.591, 146.832, 155.563, 164.814, 174.614, 185, 196, 207.652, 220, 233.082, 246.942, 261.626, 277.183, 293.665, 311.127, 329.628, 349.228, 370, 392, 415.305, 440, 466.164, 493.883, 523.251, 554.365, 587.33, 622.254, 659.255, 698.456, 740, 784, 830.609, 880, 932.328, 987.767, 1046.502, 1108.731, 1174.659, 1244.507, 1318.51, 1396.913, 1480, 1568, 1661.219, 1760, 1864.655, 1975.533, 2093.005, 2217.461, 2349.318, 2489.016, 2637.02, 2793.826, 2960, 3136, 3322.438, 3520, 3729.31, 3951.066, 4186.009, 4432.922, 4698.636, 4978.032, 5274.041, 5587.652, 5920, 6272, 6644.875, 7040, 7458.62];
+
+        // 31-Equal (Meantone, 1/4 comma) (A4 = 440 Hz)
+        const tuning_quartercomma_modern = [13.75, 14.061, 14.379, 14.704, 15.036, 15.376, 15.724, 16.08, 16.443, 16.815, 17.195, 17.584, 17.982, 18.388, 18.804, 19.229, 19.664, 20.109, 20.563, 21.028, 21.504, 21.99, 22.487, 22.996, 23.516, 24.047, 24.591, 25.147, 25.716, 26.297, 26.892, 27.5, 28.122, 28.758, 29.408, 30.072, 30.752, 31.448, 32.16, 32.886, 33.63, 34.39, 35.168, 35.964, 36.776, 37.608, 38.458, 39.328, 40.218, 41.126, 42.056, 43.008, 43.98, 44.974, 45.992, 47.032, 48.094, 49.182, 50.294, 51.432, 52.594, 53.784, 55, 56.244, 57.516, 58.816, 60.144, 61.504, 62.896, 64.32, 65.772, 67.26, 68.78, 70.336, 71.928, 73.552, 75.216, 76.916, 78.656, 80.436, 82.252, 84.112, 86.016, 87.96, 89.948, 91.984, 94.064, 96.188, 98.364, 100.588, 102.864, 105.188, 107.568, 110, 112.488, 115.032, 117.632, 120.288, 123.008, 125.792, 128.64, 131.544, 134.52, 137.56, 140.672, 143.856, 147.104, 150.432, 153.832, 157.312, 160.872, 164.504, 168.224, 172.032, 175.92, 179.896, 183.968, 188.128, 192.376, 196.728, 201.176, 205.728, 210.376, 215.136, 220, 224.976, 230.064, 235.264, 240.576, 246.016, 251.584, 257.28, 263.088, 269.04, 275.12, 281.344, 287.712, 294.208, 300.864, 307.664, 314.624, 321.744, 329.008, 336.448, 344.064, 351.84, 359.792, 367.936, 376.256, 384.752, 393.456, 402.352, 411.456, 420.752, 430.272, 440, 449.952, 460.128, 470.528, 481.152, 492.032, 503.168, 514.56, 526.176, 538.08, 550.24, 562.688, 575.424, 588.416, 601.728, 615.328, 629.248, 643.488, 658.016, 672.896, 688.128, 703.68, 719.584, 735.872, 752.512, 769.504, 786.912, 804.704, 822.912, 841.504, 860.544, 880, 899.904, 920.256, 941.056, 962.304, 984.064, 1006.336, 1029.12, 1052.352, 1076.16, 1100.48, 1125.376, 1150.848, 1176.832, 1203.456, 1230.656, 1258.496, 1286.976, 1316.032, 1345.792, 1376.256, 1407.36, 1439.168, 1471.744, 1505.024, 1539.008, 1573.824, 1609.408, 1645.824, 1683.008, 1721.088, 1760, 1799.808, 1840.512, 1882.112, 1924.608, 1968.128, 2012.672, 2058.24, 2104.704, 2152.32, 2200.96, 2250.752, 2301.696, 2353.664, 2406.912, 2461.312, 2516.992, 2573.952, 2632.064, 2691.584, 2752.512, 2814.72, 2878.336, 2943.488, 3010.048, 3078.016, 3147.648, 3218.816, 3291.648, 3366.016, 3442.176, 3520, 3599.616, 3681.024, 3764.224, 3849.216, 3936.256, 4025.344, 4116.48, 4209.408, 4304.64, 4401.92, 4501.504, 4603.392, 4707.328, 4813.824, 4922.624, 5033.984, 5147.904, 5264.128, 5383.168, 5505.024, 5629.44, 5756.672, 5886.976, 6020.096, 6156.032, 6295.296, 6437.632, 6583.296, 6732.032, 6884.352, 7040, 7199.232, 7362.048, 7528.448, 7698.432, 7872.512, 8050.688, 8232.96];
+        
+        // 31-Equal (Meantone, 1/4 comma) (A4 = 415 Hz)
+        const tuning_quartercomma_baroque = [12.96875, 13.262, 13.562, 13.869, 14.182, 14.503, 14.831, 15.166, 15.509, 15.86, 16.218, 16.585, 16.96, 17.343, 17.736, 18.137, 18.547, 18.966, 19.395, 19.834, 20.282, 20.741, 21.21, 21.689, 22.18, 22.681, 23.194, 23.718, 24.255, 24.803, 25.364, 25.9375, 26.524, 27.124, 27.738, 28.364, 29.006, 29.662, 30.332, 31.018, 31.72, 32.436, 33.17, 33.92, 34.686, 35.472, 36.274, 37.094, 37.932, 38.79, 39.668, 40.564, 41.482, 42.42, 43.378, 44.36, 45.362, 46.388, 47.436, 48.51, 49.606, 50.728, 51.876, 53.048, 54.248, 55.476, 56.728, 58.012, 59.324, 60.664, 62.036, 63.44, 64.872, 66.34, 67.84, 69.372, 70.944, 72.548, 74.188, 75.864, 77.58, 79.336, 81.128, 82.964, 84.84, 86.756, 88.72, 90.724, 92.776, 94.872, 97.02, 99.212, 101.456, 103.752, 106.096, 108.496, 110.952, 113.456, 116.024, 118.648, 121.328, 124.072, 126.88, 129.744, 132.68, 135.68, 138.744, 141.888, 145.096, 148.376, 151.728, 155.16, 158.672, 162.256, 165.928, 169.68, 173.512, 177.44, 181.448, 185.552, 189.744, 194.04, 198.424, 202.912, 207.5, 212.192, 216.992, 221.904, 226.912, 232.048, 237.296, 242.656, 248.144, 253.76, 259.488, 265.36, 271.36, 277.488, 283.776, 290.192, 296.752, 303.456, 310.32, 317.344, 324.512, 331.856, 339.36, 347.024, 354.88, 362.896, 371.104, 379.488, 388.08, 396.848, 405.824, 415, 424.384, 433.984, 443.808, 453.824, 464.096, 474.592, 485.312, 496.288, 507.52, 518.976, 530.72, 542.72, 554.976, 567.552, 580.384, 593.504, 606.912, 620.64, 634.688, 649.024, 663.712, 678.72, 694.048, 709.76, 725.792, 742.208, 758.976, 776.16, 793.696, 811.648, 830, 848.768, 867.968, 887.616, 907.648, 928.192, 949.184, 970.624, 992.576, 1015.04, 1037.952, 1061.44, 1085.44, 1109.952, 1135.104, 1160.768, 1187.008, 1213.824, 1241.28, 1269.376, 1298.048, 1327.424, 1357.44, 1388.096, 1419.52, 1451.584, 1484.416, 1517.952, 1552.32, 1587.392, 1623.296, 1660, 1697.536, 1735.936, 1775.232, 1815.296, 1856.384, 1898.368, 1941.248, 1985.152, 2030.08, 2075.904, 2122.88, 2170.88, 2219.904, 2270.208, 2321.536, 2374.016, 2427.648, 2482.56, 2538.752, 2596.096, 2654.848, 2714.88, 2776.192, 2839.04, 2903.168, 2968.832, 3035.904, 3104.64, 3174.784, 3246.592, 3320, 3395.072, 3471.872, 3550.464, 3630.592, 3712.768, 3796.736, 3882.496, 3970.304, 4060.16, 4151.808, 4245.76, 4341.76, 4439.808, 4540.416, 4643.072, 4748.032, 4855.296, 4965.12, 5077.504, 5192.192, 5309.696, 5429.76, 5552.384, 5678.08, 5806.336, 5937.664, 6071.808, 6209.28, 6349.568, 6493.184, 6640, 6790.144, 6943.744, 7100.928, 7261.184, 7425.536, 7593.472, 7764.992];
+
+        // 31-Equal (Meantone, 1/4 comma) (A4 = 392 Hz)
+        const tuning_quartercomma_frenchbaroque = [12.25, 12.527, 12.81, 13.1, 13.396, 13.699, 14.009, 14.326, 14.649, 14.981, 15.319, 15.666, 16.02, 16.382, 16.753, 17.132, 17.519, 17.915, 18.32, 18.734, 19.158, 19.591, 20.034, 20.487, 20.95, 21.424, 21.909, 22.404, 22.91, 23.429, 23.958, 24.5, 25.054, 25.62, 26.2, 26.792, 27.398, 28.018, 28.652, 29.298, 29.962, 30.638, 31.332, 32.04, 32.764, 33.506, 34.264, 35.038, 35.83, 36.64, 37.468, 38.316, 39.182, 40.068, 40.974, 41.9, 42.848, 43.818, 44.808, 45.82, 46.858, 47.916, 49, 50.108, 51.24, 52.4, 53.584, 54.796, 56.036, 57.304, 58.596, 59.924, 61.276, 62.664, 64.08, 65.528, 67.012, 68.528, 70.076, 71.66, 73.28, 74.936, 76.632, 78.364, 80.136, 81.948, 83.8, 85.696, 87.636, 89.616, 91.64, 93.716, 95.832, 98, 100.216, 102.48, 104.8, 107.168, 109.592, 112.072, 114.608, 117.192, 119.848, 122.552, 125.328, 128.16, 131.056, 134.024, 137.056, 140.152, 143.32, 146.56, 149.872, 153.264, 156.728, 160.272, 163.896, 167.6, 171.392, 175.272, 179.232, 183.28, 187.432, 191.664, 196, 200.432, 204.96, 209.6, 214.336, 219.184, 224.144, 229.216, 234.384, 239.696, 245.104, 250.656, 256.32, 262.112, 268.048, 274.112, 280.304, 286.64, 293.12, 299.744, 306.528, 313.456, 320.544, 327.792, 335.2, 342.784, 350.544, 358.464, 366.56, 374.864, 383.328, 392, 400.864, 409.92, 419.2, 428.672, 438.368, 448.288, 458.432, 468.768, 479.392, 490.208, 501.312, 512.64, 524.224, 536.096, 548.224, 560.608, 573.28, 586.24, 599.488, 613.056, 626.912, 641.088, 655.584, 670.4, 685.568, 701.088, 716.928, 733.12, 749.728, 766.656, 784, 801.728, 819.84, 838.4, 857.344, 876.736, 896.576, 916.864, 937.536, 958.784, 980.416, 1002.624, 1025.28, 1048.448, 1072.192, 1096.448, 1121.216, 1146.56, 1172.48, 1198.976, 1226.112, 1253.824, 1282.176, 1311.168, 1340.8, 1371.136, 1402.176, 1433.856, 1466.24, 1499.456, 1533.312, 1568, 1603.456, 1639.68, 1676.8, 1714.688, 1753.472, 1793.152, 1833.728, 1875.072, 1917.568, 1960.832, 2005.248, 2050.56, 2096.896, 2144.384, 2192.896, 2242.432, 2293.12, 2344.96, 2397.952, 2452.224, 2507.648, 2564.352, 2622.336, 2681.6, 2742.272, 2804.352, 2867.712, 2932.48, 2998.912, 3066.624, 3136, 3206.912, 3279.36, 3353.6, 3429.376, 3506.944, 3586.304, 3667.456, 3750.144, 3835.136, 3921.664, 4010.496, 4101.12, 4193.792, 4288.768, 4385.792, 4484.864, 4586.24, 4689.92, 4795.904, 4904.448, 5015.296, 5128.704, 5244.672, 5363.2, 5484.544, 5608.704, 5735.424, 5864.96, 5997.824, 6133.248, 6272, 6413.824, 6558.72, 6707.2, 6858.752, 7013.888, 7172.608, 7334.912];
         
         function hardClip(s, t_high, t_low)
         {
@@ -267,56 +284,28 @@
             return hardClip(s, t_high, t_low) / Math.max(t_high, t_low);
         }
         
-        function rand_norm()
-        {
-            var bm_trans = function() {
-                let a0 = 0, a1 = 0;
-                
-                while (a0 === 0)
-                {
-                    a0 = Math.random(); // Converting [0, 1) to (0, 1)
-                }
-                while (a1 === 0)
-                {
-                    a1 = Math.random(); // Converting [0, 1) to (0, 1)
-                }
-                
-                let x = Math.sqrt(-2 * Math.log(a0)) * Math.cos(2.0 * Math.PI * a1) / 10 + 0.5;
-                
-                if (x > 1 || x < 0)
-                {
-                    return bm_trans(); // Resample between 0 and 1
-                }
-                return x;
-            }
-            
-            return 2 * bm_trans() - 1;
-        }
-        
+        var AudioContext = (window.webkitAudioContext || window.mozAudioContext || window.msAudioContext || window.oAudioContext || window.AudioContext);
+
         if (AudioContext)
         {
             var actx = new AudioContext();
             var masterNode = actx.createGain();
-            var defaultBufferSize = 65536;
-            
-            masterNode.gain.value = 0.999;
+            masterNode.gain.value = 1;
 
             // Oscillator
             var oscil = actx.createOscillator();
             var oscNode = actx.createGain();
             var oscOutNode = actx.createGain();
-            oscNode.gain.value = 0.5;
-            oscOutNode.gain.value = 0;
 
-            oscil.type = "sine";
-            oscil.frequency.setValueAtTime(440, actx.currentTime); // value in hertz
             oscil.connect(oscNode);
             oscNode.connect(oscOutNode);
             oscOutNode.connect(masterNode);
             oscil.start();
+
+            const defaultBufferSize = 16384;
+            const MAX_GAIN = 0.891250938133746; // Limit maximum gain to -1 dBFS
             
             // Begin Noise.js
-            
             /**
              * The MIT License (MIT)
              *
@@ -343,7 +332,7 @@
              * Source: http://www.github.com/zacharydenton/noise.js
              */
 
-            (function(AudioContext, bufferSize, b, r, y, n) {
+            (function(AudioContext, bufferSize, b, r) {
                 AudioContext.prototype.createWhiteNoise = function() {
                     /**
                      * Generate white noise
@@ -357,25 +346,14 @@
                             var white = Math.random() * 2 - 1;
                             switch (white_type)
                             {
-                                case 0:
-                                    // Random
-                                    output[i] = white;
-                                break;
                                 case 1:
-                                    // Modified
-                                    output[i] = Math.sign(white) * Math.pow(Math.abs(white), 3 / 2);
-                                break;
-                                case 2:
-                                    // Gaussian (normally distributed)
-                                    output[i] = rand_norm();
-                                break;
-                                case 3:
-                                    // Bi-State
                                     output[i] = ((white >= 0) ? 1 : -1);
                                 break;
-                                case 4:
-                                    // Tri-state
+                                case 2:
                                     output[i] = ((white < -1 / 3) ? -1 : ((white < 1 / 3) ? 0 : 1));
+                                break;
+                                default:
+                                    output[i] = white;
                                 break;
                             }
                         }
@@ -388,17 +366,13 @@
                     /**
                      * Generate pink noise
                      */
-                    var a0 = y, a1 = y, a2 = y, a3 = y, a4 = y, a5 = y, a6 = y;
+                    var a0 = 0, a1 = 0, a2 = 0, a3 = 0, a4 = 0, a5 = 0, a6 = 0, s = 0;
                     var node = this.createScriptProcessor(bufferSize, b, r);
                     node.onaudioprocess = function(e) {
                         var output = e.outputBuffer.getChannelData(0);
-                        var s = 0; // Output sample
 
                         for (var i = 0; i < bufferSize; i++) 
                         {
-                            var white = Math.random() * 2 - 1;
-                            var comp = 0.129 * 44100 / actx.sampleRate; // Roughly compensate for gain
-
                             /**
                              * Filter to approximate 10 dB per decade
                              * 
@@ -408,31 +382,33 @@
                              * sampling frequency (i.e. the Nyquist frequency), but can be scaled down by multiplying the magnitude of the 
                              * output sample by a correction factor. 
                              */
+                            var white = Math.random() * 2 - 1;
                             a0 = 0.99886 * a0 + white * 0.0555179;
                             a1 = 0.99332 * a1 + white * 0.0750759;
                             a2 = 0.96900 * a2 + white * 0.1538520;
                             a3 = 0.86650 * a3 + white * 0.3104856;
                             a4 = 0.55000 * a4 + white * 0.5329522;
                             a5 = -0.76160 * a5 - white * 0.0168980;
-                            s = (a0 + a1 + a2 + a3 + a4 + a5 + a6 + white * 0.5362) * comp;
+                            s = (a0 + a1 + a2 + a3 + a4 + a5 + a6 + white * 0.5362) * 0.1289; // Roughly compensate for gain
                             a6 = white * 0.115926;
+
+                            if (Math.abs(s) > 1)
+                            {
+                                continue;
+                            }
 
                             switch (pink_clipping)
                             {
                                 case 1:
-                                    // -3 dB Clipping
                                     output[i] = hardClipNormalise(s, 1 / Math.sqrt(2), -1 / Math.sqrt(2));
                                 break;
                                 case 2:
-                                    // -6 dB Clipping
                                     output[i] = hardClipNormalise(s, 0.5, -0.5);
                                 break;
                                 case 3:
-                                    // -12 dB Clipping
                                     output[i] = hardClipNormalise(s, 0.25, -0.25);
                                 break;
                                 default:
-                                    // No clipping
                                     output[i] = s;
                                 break;
                             }
@@ -446,12 +422,12 @@
                     /**
                      * Generate Brownian noise 
                      */
+                    var s = 0;
                     var node = this.createScriptProcessor(bufferSize, b, r);
                     node.onaudioprocess = function(e) {
                         var output = e.outputBuffer.getChannelData(0);
-                        var leakage = hardClip(1 - 144.0 / actx.sampleRate, 1, 0);
-                        var scaling = hardClip(9.0 / Math.sqrt(actx.sampleRate), 10, 0);
-                        var s = 0; // Output sample
+                        var leakage = hardClip(1 - 144.0 / actx.sampleRate, 0.999999, 0);
+                        var scaling = hardClip(9.0 / Math.sqrt(actx.sampleRate), 10, 0.000001);
 
                         for (var i = 0; i < bufferSize; i++)
                         {
@@ -463,19 +439,15 @@
                             switch (brown_clipping)
                             {
                                 case 1:
-                                    // -3 dB Clipping
                                     output[i] = hardClipNormalise(s, 1 / Math.sqrt(2), -1 / Math.sqrt(2));
                                 break;
                                 case 2:
-                                    // -6 dB Clipping
                                     output[i] = hardClipNormalise(s, 0.5, -0.5);
                                 break;
                                 case 3:
-                                    // -12 dB Clipping
                                     output[i] = hardClipNormalise(s, 0.25, -0.25);
                                 break;
                                 default:
-                                    // No clipping
                                     output[i] = s;
                                 break;
                             }
@@ -484,8 +456,7 @@
 
                     return node;
                 };
-            })(AudioContext, defaultBufferSize, 1, 1, 0, 0);
-
+            })(AudioContext, defaultBufferSize, 1, 1);
             // End Noise.js
             
             // Set up gain and switch nodes
@@ -517,482 +488,498 @@
             
             // Connect everything together
             noiseOutNode.connect(masterNode).connect(actx.destination);
-        }
         
-        $(document).ready(function() {
-            $("#sound_srate").html(actx.sampleRate);
-            
-            function tglc(nd, btn_id)
-            {
-                var btn = document.getElementById(btn_id);
-                var t = actx.currentTime;
-
-                if (!nd.gain.value)
+            $(document).ready(function() {
+                function tglc(nd, btn_id)
                 {
-                    nd.gain.value = 1;
-                    btn.style.color = "#008800";
-                    btn.innerText = "ON";
-                }
-                else
-                {
-                    nd.gain.value = 0;
-                    btn.style.color = "#FF0000";
-                    btn.innerText = "OFF";
-                }
-            }
+                    var btn = document.getElementById(btn_id);
+                    var t = actx.currentTime;
 
-            var ops = $("OPTION");
-            
-            // Black key / White key distinction
-            for (var i = 0; i < ops.length; i++)
-            {
-                var el = ops[i];
-                var num = parseInt(el.value, 10);
-                ([0, 2, 5, 7, 10].indexOf(Math.abs(num) % 12) >= 0) && el.setAttribute("style", "background: #000000; color: #FFFFFF;");
-            }
-
-            $("#SELECTORS").on("click", function(evt) {
-                let tgt = evt.target;
-
-                if (tgt.tagName === "INPUT")
-                {
-                    switch (tgt.id)
+                    if (!nd.gain.value)
                     {
-                        // Waveform channels
-                        case "sine_button":
-                            oscil.type = "sine";
-                        break;
-                        case "triangle_button":
-                            oscil.type = "triangle";
-                        break;
-                        case "square_button":
-                            oscil.type = "square";
-                        break;
-                        case "saw_button":
-                            oscil.type = "sawtooth";
-                        break;
-                        default:
-                            whiteGain.gain.value = ((tgt.id === "white_noise") ? 1 : 0);
-                            pinkGain.gain.value = ((tgt.id === "pink_noise") ? 1 : 0);
-                            brownGain.gain.value = ((tgt.id === "brown_noise") ? 1 : 0);
-                        break;
-                    }
-                }
-                else
-                {
-                    return;
-                }
-            });
-
-            $("#TYPE_SELECTORS").on("change", function(evt) {
-                let tgt = evt.target;
-
-                switch (tgt.id)
-                {
-                    case "freq":
-                    (function(x, t) {
-                        if (!isEvaluable(x))
-                        {
-                            alert("Please enter a NUMBER.");
-                        }
-                        else if (isEvaluable(x) && (x < 1))
-                        {
-                            alert("Frequency must be at least 1 Hz and must be positive.");
-                            oscil.frequency.setValueAtTime(1, t);
-                        }
-                        else if (isEvaluable(x) && (x > 20000))
-                        {
-                            alert("Maximum frequency is 20000 Hz.");
-                            oscil.frequency.setValueAtTime(20000, t);
-                        }
-                        else
-                        {
-                            oscil.frequency.setValueAtTime(tgt.value, t);
-                        }
-                    })(this.value, actx.currentTime);
-                    break;
-                    case "key_num":
-                    (function(t) {
-                        if (!isEvaluable(tgt.value))
-                        {
-                            $("#freq").attr("disabled", false);
-                        }
-                        else
-                        {
-                            var f = parseFloat($("#key_num").children("option:selected").attr("data-freq"));
-                            $("#freq").attr("disabled", true).val(f);
-                            oscil.frequency.setValueAtTime(f, t);
-                        }
-                    })(actx.currentTime);
-                    break;
-                }
-            });
-
-            $("#TYPE_SELECTORS").on("click", function(evt) {
-                let tgt = evt.target;
-
-                switch (tgt.id)
-                {   // Switch between random, binary, and ternary noise
-                    case "rand":
-                    white_type = 0;
-                    break;
-                    case "modified":
-                    white_type = 1;
-                    break;
-                    case "gauss":
-                    white_type = 2;
-                    break;
-                    case "binary":
-                    white_type = 3;
-                    break;
-                    case "ternary":
-                    white_type = 4;
-                    break;
-
-                    // Set clipping threshold for pink noise and Brownian noise
-                    case "unclip":
-                    pink_clipping = 0;
-                    brown_clipping = 0;
-                    break;
-                    case "clip_3db":
-                    pink_clipping = 1;
-                    brown_clipping = 1;
-                    break;
-                    case "clip_6db":
-                    pink_clipping = 2;
-                    brown_clipping = 2;
-                    break;
-                    case "clip_12db":
-                    pink_clipping = 3;
-                    brown_clipping = 3;
-                    break;
-                }
-            });
-
-            $("#SWITCHES").on("click", function(evt) {
-                let tgt = evt.target;
-
-                actx.resume().then(() => {
-                    if (["oscillator_switch", "OSC_TRIG_LAB"].indexOf(tgt.id) >= 0)
-                    {
-                        tglc(oscOutNode, "OSC_TRIG_LAB");
-                        return 1;
-                    }
-                    else if (["noise_switch", "NOISE_TRIG_LAB"].indexOf(tgt.id) >= 0)
-                    {
-                        tglc(noiseOutNode, "NOISE_TRIG_LAB");
-                        return 1;
+                        nd.gain.value = 1;
+                        btn.style.color = "#00AA00";
+                        btn.innerText = "ON";
                     }
                     else
                     {
-                        return 0;
+                        nd.gain.value = 0;
+                        btn.style.color = "#FF0000";
+                        btn.innerText = "OFF";
+                    }
+                }
+
+                function change_tuning(pitch)
+                {
+                    var std;
+                    switch (pitch)
+                    {
+                        case "a466":
+                            std = tuning_renaissance;
+                        break;
+                        case "c256":
+                            std = tuning_scientific;
+                        break;
+                        case "a415":
+                            std = tuning_baroque;
+                        break;
+                        case "a392":
+                            std = tuning_french_baroque;
+                        break;
+                        default:
+                            std = tuning_modern;
+                        break;
+                    }
+                    
+                    $("option.piano_key").each((i, elem) => {
+                        $(elem).attr("data-freq", std[i]);
+                    });
+                }
+
+                $("#SELECTORS").on("click", function(evt) {
+                    let tgt = evt.target;
+
+                    if (tgt.tagName === "INPUT")
+                    {
+                        switch (tgt.id)
+                        {
+                            // Waveform channels
+                            case "sine_button":
+                                oscil.type = "sine";
+                            break;
+                            case "triangle_button":
+                                oscil.type = "triangle";
+                            break;
+                            case "square_button":
+                                oscil.type = "square";
+                            break;
+                            case "saw_button":
+                                oscil.type = "sawtooth";
+                            break;
+                            default:
+                                whiteGain.gain.value = ((tgt.id === "white_noise") ? 1 : 0);
+                                pinkGain.gain.value = ((tgt.id === "pink_noise") ? 1 : 0);
+                                brownGain.gain.value = ((tgt.id === "brown_noise") ? 1 : 0);
+                            break;
+                        }
+                    }
+                    else
+                    {
+                        return;
                     }
                 });
-            });
 
-            $("#osc_vol").on("input", function() {
-                oscNode.gain.value = this.value / this.max;
-            });
+                $("#TYPE_SELECTORS").on("change", function(evt) {
+                    let tgt = evt.target;
 
-            $("#noise_vol").on("input", function() {
-                noiseNode.gain.value = this.value / this.max;
+                    switch (tgt.id)
+                    {
+                        case "freq":
+                        (function(f) {
+                            if (!isEvaluable(f))
+                            {
+                                alert("Please enter a NUMBER.");
+                            }
+                            else if (isEvaluable(f) && (f < 1))
+                            {
+                                alert("Frequency must be at least 1 Hz and must be positive.");
+                                oscil.frequency.setValueAtTime(1, actx.currentTime);
+                            }
+                            else if (isEvaluable(f) && (f > 20000))
+                            {
+                                alert("Maximum frequency is 20000 Hz.");
+                                oscil.frequency.setValueAtTime(20000, actx.currentTime);
+                            }
+                            else
+                            {
+                                oscil.frequency.setValueAtTime(eval(f), actx.currentTime);
+                            }
+                        })(tgt.value);
+                        break;
+                        case "key_num":
+                        (function(f) {
+                            var x = $("#key_num").children("option:selected").attr("data-freq");
+                            if (!isEvaluable(f))
+                            {
+                                using_keys = false;
+                            }
+                            else
+                            {
+                                var y = parseFloat(x);
+                                $("#freq").val(y);
+                                oscil.frequency.setValueAtTime(y, actx.currentTime);
+                                using_keys = true;
+                            }
+                            $("#freq").attr("disabled", using_keys);
+                        })(tgt.value);
+                        break;
+                        case "tuning_standard":
+                        (function() {
+                            change_tuning($("#tuning_standard").children("option:selected").attr("id"));
+                            var x = $("#key_num").children("option:selected").attr("data-freq");
+                            if (using_keys)
+                            {
+                                var z = parseFloat(x);
+                                $("#freq").val(z);
+                                oscil.frequency.setValueAtTime(z, actx.currentTime);
+                            }
+                        })();
+                        break;
+                    }
+                });
+
+                $("#TYPE_SELECTORS").on("click", function(evt) {
+                    let tgt = evt.target;
+
+                    switch (tgt.id)
+                    {
+                        // Switch between random, binary, and ternary noise
+                        case "rand_white":
+                            white_type = 0;
+                        break;
+                        case "binary_white":
+                            white_type = 1;
+                        break;
+                        case "ternary_white":
+                            white_type = 2;
+                        break;
+
+                        // Set clipping threshold for pink noise and Brownian noise
+                        case "unclip":
+                            pink_clipping = 0;
+                            brown_clipping = 0;
+                        break;
+                        case "clip_3db":
+                            pink_clipping = 1;
+                            brown_clipping = 1;
+                        break;
+                        case "clip_6db":
+                            pink_clipping = 2;
+                            brown_clipping = 2;
+                        break;
+                        case "clip_12db":
+                            pink_clipping = 3;
+                            brown_clipping = 3;
+                        break;
+                    }
+                });
+
+                $("#SWITCHES").on("click", function(evt) {
+                    let tgt = evt.target;
+                    var oscvol = document.getElementById("osc_vol");
+                    var noisevol = document.getElementById("noise_vol");
+
+                    actx.resume().then(() => {
+                        if (["oscillator_switch", "OSC_TRIG_LAB"].indexOf(tgt.id) >= 0)
+                        {
+                            tglc(oscOutNode, "OSC_TRIG_LAB");
+                            return 0;
+                        }
+                        else if (["noise_switch", "NOISE_TRIG_LAB"].indexOf(tgt.id) >= 0)
+                        {
+                            tglc(noiseOutNode, "NOISE_TRIG_LAB");
+                            return 0;
+                        }
+                    });
+                });
+
+                $("#osc_vol").on("input", function() {
+                    oscNode.gain.value = this.value / this.max * MAX_GAIN;
+                });
+
+                $("#noise_vol").on("input", function() {
+                    noiseNode.gain.value = this.value / this.max * MAX_GAIN;
+                });
+
+                $("#sound_srate").html(actx.sampleRate);
+                $("#freq").val("440");
+                change_tuning("a440");
+
+                oscNode.gain.value = 0.5;
+                oscOutNode.gain.value = 0;
+                oscil.type = "sine";
+                oscil.frequency.setValueAtTime(440, actx.currentTime); // Value in hertz
+                
+                $(document.body).css("display", "block");
             });
-        });
+        }
         
         //]]>
         </script>
     </head>
-    <body style="text-align: left;">
-        <div id="ContentWrapper">
-            <div class="AA">
-                <h1>Function and Noise Generator</h1>
-                <div>
-                    <table id="GENERATOR" style="background: #FFFFFF;" cellspacing="0" cellpadding="1" border="1" align="center">
-                        <tbody>
-                            <tr>
-                                <th colspan="4" style="height: 25px; font-size: 18px;">Waveform</th>
-                                <td style="background: #000000; width: 10px;" rowspan="5">&nbsp;</td>
-                                <th colspan="3" style="height: 25px; font-size: 18px;">Noise</th>
-                            </tr>
-                            <tr id="SELECTORS" style="text-align: left;">
-                                <td class="wave_selector">
-                                    <input type="radio" name="waveform" id="sine_button" value="sine" checked />
-                                    <label for="sine_button">Sine</label>
-                                </td>
-                                <td class="wave_selector">
-                                    <input type="radio" name="waveform" id="triangle_button" value="triangle" />
-                                    <label for="triangle_button">Triangle</label>
-                                </td>
-                                <td class="wave_selector">
-                                    <input type="radio" name="waveform" id="square_button" value="square" />
-                                    <label for="square_button">Square</label>
-                                </td>
-                                <td class="wave_selector">
-                                    <input type="radio" name="waveform" id="saw_button" value="sawtooth" />
-                                    <label for="saw_button">Sawtooth</label>
-                                </td>
-                                <td class="noise_selector">
-                                    <input type="radio" name="noise" id="white_noise" checked />
-                                    <label for="white_noise">White</label>
-                                </td>
-                                <td class="noise_selector">
-                                    <input type="radio" name="noise" id="pink_noise" />
-                                    <label for="pink_noise" style="color: rgb(255, 0, 255);">Pink</label>
-                                </td>
-                                <td class="noise_selector">
-                                    <input type="radio" name="noise" id="brown_noise" />
-                                    <label for="brown_noise" style="color: rgb(128, 64, 0);">Brownian</label>
-                                </td>
-                            </tr>
-                            <tr id="TYPE_SELECTORS">
-                                <td colspan="2">
-                                    <span style="height: 24px;">Frequency, Hz</span>
-                                    <input type="text" id="freq" value="440" />
-                                </td>
-                                <td colspan="2">
-                                    <span style="height: 24px;">Piano Key</span><BR />
-                                    <select id="key_num">
-                                        <!-- The approximate frequencies for F# and G are only 1/3830 and 1/4960 of a semitone off
-                                        from the actual frequency. Specifically, 740 Hz is 9.0002609639 semitones from A4 and 784 Hz
-                                        is 10.000201567087 semitones from A4. Approximations work when the approximate frequency is 
-                                        no more than 1/1000 of a semitone off from the true frequency. -->
-                                        <option value="NA">Text Input</option>
-                                        <option value="-11" data-freq="13.75">(-11) A-1</option>
-                                        <option value="-10" data-freq="14.568">(-10) A&#x266F;-1 / B&#x266D;-1</option>
-                                        <option value="-9" data-freq="15.434">(-9) B-1</option>
-                                        <option value="-8" data-freq="16.352">(-8) C0</option>
-                                        <option value="-7" data-freq="17.324">(-7) C&#x266F;0 / D&#x266D;0</option>
-                                        <option value="-6" data-freq="18.354">(-6) D0</option>
-                                        <option value="-5" data-freq="19.445">(-5) D&#x266F;0 / E&#x266D;0</option>
-                                        <option value="-4" data-freq="20.602">(-4) E0</option>
-                                        <option value="-3" data-freq="21.827">(-3) F0</option>
-                                        <option value="-2" data-freq="23.125">(-2) F&#x266F;0 / G&#x266D;0</option>
-                                        <option value="-1" data-freq="24.5">(-1) G0</option>
-                                        <option value="0" data-freq="25.956">(0) G&#x266F;0 / A&#x266D;0</option>
-                                        <option value="1" data-freq="27.5">(1) A0</option>
-                                        <option value="2" data-freq="29.135">(2) A&#x266F;0 / B&#x266D;0</option>
-                                        <option value="3" data-freq="30.868">(3) a0</option>
-                                        <option value="4" data-freq="32.703">(4) C1</option>
-                                        <option value="5" data-freq="34.648">(5) C&#x266F;1 / D&#x266D;1</option>
-                                        <option value="6" data-freq="36.708">(6) D1</option>
-                                        <option value="7" data-freq="38.891">(7) D&#x266F;1 / E&#x266D;1</option>
-                                        <option value="8" data-freq="41.203">(8) E1</option>
-                                        <option value="9" data-freq="43.653">(9) F1</option>
-                                        <option value="10" data-freq="46.25">(10) F&#x266F;1 / G&#x266D;1</option>
-                                        <option value="11" data-freq="49">(11) G1</option>
-                                        <option value="12" data-freq="51.913">(12) G&#x266F;1 / A&#x266D;1</option>
-                                        <option value="13" data-freq="55">(13) A1</option>
-                                        <option value="14" data-freq="58.27">(14) A&#x266F;1 / B&#x266D;1</option>
-                                        <option value="15" data-freq="61.735">(15) a1</option>
-                                        <option value="16" data-freq="65.406">(16) C2</option>
-                                        <option value="17" data-freq="69.296">(17) C&#x266F;2 / D&#x266D;2</option>
-                                        <option value="18" data-freq="73.416">(18) D2</option>
-                                        <option value="19" data-freq="77.782">(19) D&#x266F;2 / E&#x266D;2</option>
-                                        <option value="20" data-freq="82.406">(20) E2</option>
-                                        <option value="21" data-freq="87.307">(21) F2</option>
-                                        <option value="22" data-freq="92.5">(22) F&#x266F;2 / G&#x266D;2</option>
-                                        <option value="23" data-freq="98">(23) G2</option>
-                                        <option value="24" data-freq="103.826">(24) G&#x266F;2 / A&#x266D;2</option>
-                                        <option value="25" data-freq="110">(25) A2</option>
-                                        <option value="26" data-freq="116.541">(26) A&#x266F;2 / B&#x266D;2</option>
-                                        <option value="27" data-freq="123.471">(27) a2</option>
-                                        <option value="28" data-freq="130.813">(28) C3</option>
-                                        <option value="29" data-freq="138.591">(29) C&#x266F;3 / D&#x266D;3</option>
-                                        <option value="30" data-freq="146.832">(30) D3</option>
-                                        <option value="31" data-freq="155.563">(31) D&#x266F;3 / E&#x266D;3</option>
-                                        <option value="32" data-freq="164.814">(32) E3</option>
-                                        <option value="33" data-freq="174.614">(33) F3</option>
-                                        <option value="34" data-freq="185">(34) F&#x266F;3 / G&#x266D;3</option>
-                                        <option value="35" data-freq="196">(35) G3</option>
-                                        <option value="36" data-freq="207.652">(36) G&#x266F;3 / A&#x266D;3</option>
-                                        <option value="37" data-freq="220">(37) A3</option>
-                                        <option value="38" data-freq="233.082">(38) A&#x266F;3 / B&#x266D;3</option>
-                                        <option value="39" data-freq="246.942">(39) a3</option>
-                                        <option value="40" data-freq="261.626">(40) C4</option>
-                                        <option value="41" data-freq="277.183">(41) C&#x266F;4 / D&#x266D;4</option>
-                                        <option value="42" data-freq="293.665">(42) D4</option>
-                                        <option value="43" data-freq="311.127">(43) D&#x266F;4 / E&#x266D;4</option>
-                                        <option value="44" data-freq="329.628">(44) E4</option>
-                                        <option value="45" data-freq="349.228">(45) F4</option>
-                                        <option value="46" data-freq="370">(46) F&#x266F;4 / G&#x266D;4</option>
-                                        <option value="47" data-freq="392">(47) G4</option>
-                                        <option value="48" data-freq="415.305">(48) G&#x266F;4 / A&#x266D;4</option>
-                                        <option value="49" data-freq="440">(49) A4</option>
-                                        <option value="50" data-freq="466.164">(50) A&#x266F;4 / B&#x266D;4</option>
-                                        <option value="51" data-freq="493.883">(51) a4</option>
-                                        <option value="52" data-freq="523.251">(52) C5</option>
-                                        <option value="53" data-freq="554.365">(53) C&#x266F;5 / D&#x266D;5</option>
-                                        <option value="54" data-freq="587.33">(54) D5</option>
-                                        <option value="55" data-freq="622.254">(55) D&#x266F;5 / E&#x266D;5</option>
-                                        <option value="56" data-freq="659.255">(56) E5</option>
-                                        <option value="57" data-freq="698.456">(57) F5</option>
-                                        <option value="58" data-freq="740">(58) F&#x266F;5 / G&#x266D;5</option>
-                                        <option value="59" data-freq="784">(59) G5</option>
-                                        <option value="60" data-freq="830.609">(60) G&#x266F;5 / A&#x266D;5</option>
-                                        <option value="61" data-freq="880">(61) A5</option>
-                                        <option value="62" data-freq="932.328">(62) A&#x266F;5 / B&#x266D;5</option>
-                                        <option value="63" data-freq="987.767">(63) a5</option>
-                                        <option value="64" data-freq="1046.502">(64) C6</option>
-                                        <option value="65" data-freq="1108.731">(65) C&#x266F;6 / D&#x266D;6</option>
-                                        <option value="66" data-freq="1174.659">(66) D6</option>
-                                        <option value="67" data-freq="1244.507">(67) D&#x266F;6 / E&#x266D;6</option>
-                                        <option value="68" data-freq="1318.51">(68) E6</option>
-                                        <option value="69" data-freq="1396.913">(69) F6</option>
-                                        <option value="70" data-freq="1480">(70) F&#x266F;6 / G&#x266D;6</option>
-                                        <option value="71" data-freq="1568">(71) G6</option>
-                                        <option value="72" data-freq="1661.219">(72) G&#x266F;6 / A&#x266D;6</option>
-                                        <option value="73" data-freq="1760">(73) A6</option>
-                                        <option value="74" data-freq="1864.655">(74) A&#x266F;6 / B&#x266D;6</option>
-                                        <option value="75" data-freq="1975.533">(75) a6</option>
-                                        <option value="76" data-freq="2093.005">(76) C7</option>
-                                        <option value="77" data-freq="2217.461">(77) C&#x266F;7 / D&#x266D;7</option>
-                                        <option value="78" data-freq="2349.318">(78) D7</option>
-                                        <option value="79" data-freq="2489.016">(79) D&#x266F;7 / E&#x266D;7</option>
-                                        <option value="80" data-freq="2637.02">(80) E7</option>
-                                        <option value="81" data-freq="2793.826">(81) F7</option>
-                                        <option value="82" data-freq="2960">(82) F&#x266F;7 / G&#x266D;7</option>
-                                        <option value="83" data-freq="3136">(83) G7</option>
-                                        <option value="84" data-freq="3322.438">(84) G&#x266F;7 / A&#x266D;7</option>
-                                        <option value="85" data-freq="3520">(85) A7</option>
-                                        <option value="86" data-freq="3729.31">(86) A&#x266F;7 / B&#x266D;7</option>
-                                        <option value="87" data-freq="3951.066">(87) B7</option>
-                                        <option value="88" data-freq="4186.009">(88) C8</option>
-                                        <option value="89" data-freq="4432.922">(89) C&#x266F;8 / D&#x266D;8</option>
-                                        <option value="90" data-freq="4698.636">(90) D8</option>
-                                        <option value="91" data-freq="4978.032">(91) D&#x266F;8 / E&#x266D;8</option>
-                                        <option value="92" data-freq="5274.041">(92) E8</option>
-                                        <option value="93" data-freq="5587.652">(93) F8</option>
-                                        <option value="94" data-freq="5920">(94) F&#x266F;8 / G&#x266D;8</option>
-                                        <option value="95" data-freq="6272">(95) G8</option>
-                                        <option value="96" data-freq="6644.875">(96) G&#x266F;8 / A&#x266D;8</option>
-                                        <option value="97" data-freq="7040">(97) A8</option>
-                                        <option value="98" data-freq="7458.62">(98) A&#x266F;8 / B&#x266D;8</option>
-                                        <option value="99" data-freq="7902.133">(99) B8</option>
-                                        <option value="100" data-freq="8372.018">(100) C8</option>
-                                    </select>
-                                </td>
-                                <td id="NOISETYPE_SELECTORS" class="selector_box">
-                                    <span class="SPACER" style="width: 22px;">&nbsp;</span>
-                                    <span id="noise_info">Noise Type:</span><BR />
-                                    <span>
-                                        <span class="SPACER" style="width: 22px;">
-                                            <input type="radio" name="type" id="rand" checked />
-                                        </span>
-                                        <label for="rand">Random</label>
-                                    </span><BR />
-                                    <span>
-                                        <span class="SPACER" style="width: 22px;">
-                                            <input type="radio" name="type" id="modified" />
-                                        </span>
-                                        <label for="modified">Modified</label>
-                                    </span><BR />
-                                    <span>
-                                        <span class="SPACER" style="width: 22px;">
-                                            <input type="radio" name="type" id="gauss" />
-                                        </span>
-                                        <label for="gauss">Gaussian</label>
-                                    </span><BR />
-                                    <span>
-                                        <span class="SPACER" style="width: 22px;">
-                                            <input type="radio" name="type" id="binary" />
-                                        </span>
-                                        <label for="binary">Bi-State</label>
-                                    </span><BR />
-                                    <span>
-                                        <span class="SPACER" style="width: 22px;">
-                                            <input type="radio" name="type" id="ternary" />
-                                        </span>
-                                        <label for="ternary">Tri-State</label>
-                                    </span>
-                                </td>
-                                <td id="CLIPPING_SELECTORS" class="selector_box" colspan="2" style="text-align: center;">
-                                    <span style="display: inline-block; text-align: left;">
-                                        <span class="SPACER" style="width: 22px;">&nbsp;</span>
-                                        <span id="noise_info">Clipping:</span><BR />
-                                        <span>
-                                            <span class="SPACER" style="width: 22px;">
-                                                <input type="radio" name="clip" id="unclip" checked />
-                                            </span>
-                                            <label for="unclip">None</label>
-                                        </span><BR />
-                                        <span>
-                                            <span class="SPACER" style="width: 22px;">
-                                                <input type="radio" name="clip" id="clip_3db" />
-                                            </span>
-                                            <label for="clip_3db">&minus;3 dB</label>
-                                        </span><BR />
-                                        <span>
-                                            <span class="SPACER" style="width: 22px;">
-                                                <input type="radio" name="clip" id="clip_6db" />
-                                            </span>
-                                            <label for="clip_6db">&minus;6 dB</label>
-                                        </span><BR />
-                                        <span>
-                                            <span class="SPACER" style="width: 22px;">
-                                                <input type="radio" name="clip" id="clip_6db" />
-                                            </span>
-                                            <label for="clip_12db">&minus;12 dB</label>
-                                        </span>
-                                    </span>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td colspan="4" style="font-size: 6px;">
-                                    <BR />
-                                    <span id="vol_text" style="font-size: 14px;">Tone Volume</span><BR /><BR /><BR />
-                                    <span class="slidecontainer">
-                                        <input type="range" class="slider" id="osc_vol" min="0" max="65536" value="32768" style="width: 98%;"/>
-                                    </span><BR /><BR /><BR />
-                                </td>
-                                <td colspan="3" style="font-size: 6px;">
-                                    <BR />
-                                    <span id="vol_text" style="font-size: 14px;">Noise Volume</span><BR /><BR /><BR />
-                                    <span class="slidecontainer">
-                                        <input type="range" class="slider" id="noise_vol" min="0" max="65536" value="32768" style="width: 98%;" />
-                                    </span><BR /><BR /><BR />
-                                </td>
-                            </tr>
-                            <tr id="SWITCHES">
-                                <td colspan="4">
-                                    <a href="javascript:void(0);" id="oscillator_switch" style="height: 30px; width: 60px;">
-                                        <span class="TRIG_LAB">&nbsp;&nbsp;<span id="OSC_TRIG_LAB" style="display: inline-block; width: 60px;">OFF</span>&nbsp;&nbsp;</span>
-                                    </a>
-                                </td>
-                                <td colspan="3">
-                                    <a href="javascript:void(0);" id="noise_switch" style="height: 30px; width: 60px;">
-                                        <span class="TRIG_LAB">&nbsp;&nbsp;<span id="NOISE_TRIG_LAB" style="display: inline-block; width: 60px;">OFF</span>&nbsp;&nbsp;</span>
-                                    </a>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td colspan="8" style="height: 28px;">
-                                    Operating Sample Rate: <span id="sound_srate"></span> Hz
-                                </td>
-                            </tr>
-                            <tr class="desc">
-                                <td colspan="8">
-                                    <p>The tone generator generates standard sine, triangle, square, and sawtooth waveforms.</p>
-                                    <p>Simply enter the desired frequency by selecting "Text input" or use the dropdown to generate a tone corresponding to a desired musical note. All non-sinusoidal waveforms are anti-aliased as they are synthesised via additive synthesis. The sample rate that is used depends on the sample rate that your device's audio driver is set to, as well as your browser.</p>
-                                    </p>
-                                </td>
-                            </tr>
-                            <tr class="desc">
-                                <td colspan="8">
-                                    <p>The noise generator can generate white, pink, and Brownian noise.</p>
-                                    <p>White noise has a flat frequency spectrum, with equal power in bands that are linearly wide. For example, the range of frequencies between 100 and 200 Hz contains the same amount of sound power as the range between 1000 and 1100 Hz. Here, three possible generation modes are available.</p>
-                                    <p class="desc_sub">Generating (pseudo)random numbers is the most common method used to generate white noise. When generating random noise, the output samples are simply random numbers greater than &minus;1 and less than 1. Unfiltered white noise has a peak-to-RMS ratio of <span class="sqrt"><span class="sqrt_text">3</span></span> &approx; 1.732051, slightly less than the 2:1 ratio common to much pop, rock, and electronic music nowadays.</p>
-                                    <p class="desc_sub">"Modified" mode generates white noise but raises each sample to the power of 1.5, resulting in an unfiltered peak-to-RMS ratio of 2.</p>
-                                    <p class="desc_sub">Bi-state mode maps all non-negative random numbers to 1 and all negative numbers to &minus;1, so the output samples are either 1 or &minus;1. When unfiltered, the peak and RMS voltages are the same, similar to a square wave. Low peak-to-RMS ratios can be seen in heavily clipped or compressed programme material.</p>
-                                    <p class="desc_sub">Tri-state mode maps all numbers between +1/3 and +1 to 1, numbers between &minus;1/3 and +1/3 to 0, and numbers between &minus;1 and &minus;1/3 to &minus;1. The peak-to-RMS ratio is <span class="sqrt"><span class="sqrt_text">1.5</span></span> &approx; 1.224745.</p>
-                                    <p>Pink noise has a spectrum that, when plotted on a logarithmic scale, slopes downwards at 10 dB/decade (3.01 dB/octave); it has equal power in bands that are proportionally wide. For example, the range of frequencies between 100 and 200 Hz contains the same sound power as 1000 to 2000 Hz. The unfiltered peak-to-RMS ratio is 4.</p>
-                                    <p>Brownian noise has a spectrum that slopes downward at 20 dB/decade (6.02 dB/octave), the same slope as a first-order low-pass filter. Brownian noise is not named for it suggesting the colour brown but instead for Brownian ("random walk") motion.</p>
-                                    <p>Various levels of clipping are also available for pink and Brownian noise.</p>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
+    <body style="display: none;">
+        <h1>Function and Noise Generator</h1>
+        <table id="GENERATOR" style="background: #FFFFFF;" cellspacing="0" cellpadding="1" border="1" align="center">
+            <tbody>
+                <tr>
+                    <th colspan="4" style="height: 25px; font-size: 18px;">Waveform</th>
+                    <td style="background: #000000; width: 10px;" rowspan="5">&nbsp;</td>
+                    <th colspan="3" style="height: 25px; font-size: 18px;">Noise</th>
+                </tr>
+                <tr id="SELECTORS" style="text-align: left;">
+                    <td class="wave_selector">
+                        <input type="radio" name="waveform" id="sine_button" value="sine" checked />
+                        <label for="sine_button">Sine</label>
+                    </td>
+                    <td class="wave_selector">
+                        <input type="radio" name="waveform" id="triangle_button" value="triangle" />
+                        <label for="triangle_button">Triangle</label>
+                    </td>
+                    <td class="wave_selector">
+                        <input type="radio" name="waveform" id="square_button" value="square" />
+                        <label for="square_button">Square</label>
+                    </td>
+                    <td class="wave_selector">
+                        <input type="radio" name="waveform" id="saw_button" value="sawtooth" />
+                        <label for="saw_button">Sawtooth</label>
+                    </td>
+                    <td class="noise_selector">
+                        <input type="radio" name="noise" id="white_noise" checked />
+                        <label for="white_noise">White</label>
+                    </td>
+                    <td class="noise_selector">
+                        <input type="radio" name="noise" id="pink_noise" />
+                        <label for="pink_noise" style="color: rgb(255, 0, 255);">Pink</label>
+                    </td>
+                    <td class="noise_selector">
+                        <input type="radio" name="noise" id="brown_noise" />
+                        <label for="brown_noise" style="color: rgb(128, 64, 0);">Brownian</label>
+                    </td>
+                </tr>
+                <tr id="TYPE_SELECTORS">
+                    <td colspan="2">
+                        <span style="height: 24px;">Frequency, Hz</span>
+                        <input type="text" id="freq" />
+                    </td>
+                    <td colspan="2">
+                        <span style="height: 24px;">Piano Key</span><BR />
+                        <select id="key_num">
+                            <option value="NA" id="PNA" class="piano_key">Text Input</option>
+                            <option value="-11" id="P-11" class="piano_key">(&#x2212;11) A&#x2212;1</option>
+                            <option value="-10" style="background: #000000; color: #FFFFFF;" id="P-10" class="piano_key">(&#x2212;10) A&#x266F;&#x2212;1 / B&#x266D;&#x2212;1</option>
+                            <option value="-9" id="P-9" class="piano_key">(&#x2212;9) B-1</option>
+                            <option value="-8" id="P-8" class="piano_key">(&#x2212;8) C0</option>
+                            <option value="-7" style="background: #000000; color: #FFFFFF;" id="P-7" class="piano_key">(&#x2212;7) C&#x266F;0 / D&#x266D;0</option>
+                            <option value="-6" id="P-6" class="piano_key">(&#x2212;6) D0</option>
+                            <option value="-5" style="background: #000000; color: #FFFFFF;" id="P-5" class="piano_key">(&#x2212;5) D&#x266F;0 / E&#x266D;0</option>
+                            <option value="-4" id="P-4" class="piano_key">(&#x2212;4) E0</option>
+                            <option value="-3" id="P-3" class="piano_key">(&#x2212;3) F0</option>
+                            <option value="-2" style="background: #000000; color: #FFFFFF;" id="P-2" class="piano_key">(&#x2212;2) F&#x266F;0 / G&#x266D;0</option>
+                            <option value="-1" id="P-1" class="piano_key">(&#x2212;1) G0</option>
+                            <option value="0" style="background: #000000; color: #FFFFFF;" id="P0" class="piano_key">(0) G&#x266F;0 / A&#x266D;0</option>
+                            <option value="1" id="P1" class="piano_key">(1) A0</option>
+                            <option value="2" style="background: #000000; color: #FFFFFF;" id="P2" class="piano_key">(2) A&#x266F;0 / B&#x266D;0</option>
+                            <option value="3" id="P3" class="piano_key">(3) B0</option>
+                            <option value="4" id="P4" class="piano_key">(4) C1</option>
+                            <option value="5" style="background: #000000; color: #FFFFFF;" id="P5" class="piano_key">(5) C&#x266F;1 / D&#x266D;1</option>
+                            <option value="6" id="P6" class="piano_key">(6) D1</option>
+                            <option value="7" style="background: #000000; color: #FFFFFF;" id="P7" class="piano_key">(7) D&#x266F;1 / E&#x266D;1</option>
+                            <option value="8" id="P8" class="piano_key">(8) E1</option>
+                            <option value="9" id="P9" class="piano_key">(9) F1</option>
+                            <option value="10" style="background: #000000; color: #FFFFFF;" id="P10" class="piano_key">(10) F&#x266F;1 / G&#x266D;1</option>
+                            <option value="11" id="P11" class="piano_key">(11) G1</option>
+                            <option value="12" style="background: #000000; color: #FFFFFF;" id="P12" class="piano_key">(12) G&#x266F;1 / A&#x266D;1</option>
+                            <option value="13" id="P13" class="piano_key">(13) A1</option>
+                            <option value="14" style="background: #000000; color: #FFFFFF;" id="P14" class="piano_key">(14) A&#x266F;1 / B&#x266D;1</option>
+                            <option value="15" id="P15" class="piano_key">(15) B1</option>
+                            <option value="16" id="P16" class="piano_key">(16) C2</option>
+                            <option value="17" style="background: #000000; color: #FFFFFF;" id="P17" class="piano_key">(17) C&#x266F;2 / D&#x266D;2</option>
+                            <option value="18" id="P18" class="piano_key">(18) D2</option>
+                            <option value="19" style="background: #000000; color: #FFFFFF;" id="P19" class="piano_key">(19) D&#x266F;2 / E&#x266D;2</option>
+                            <option value="20" id="P20" class="piano_key">(20) E2</option>
+                            <option value="21" id="P21" class="piano_key">(21) F2</option>
+                            <option value="22" style="background: #000000; color: #FFFFFF;" id="P22" class="piano_key">(22) F&#x266F;2 / G&#x266D;2</option>
+                            <option value="23" id="P23" class="piano_key">(23) G2</option>
+                            <option value="24" style="background: #000000; color: #FFFFFF;" id="P24" class="piano_key">(24) G&#x266F;2 / A&#x266D;2</option>
+                            <option value="25" id="P25" class="piano_key">(25) A2</option>
+                            <option value="26" style="background: #000000; color: #FFFFFF;" id="P26" class="piano_key">(26) A&#x266F;2 / B&#x266D;2</option>
+                            <option value="27" id="P27" class="piano_key">(27) B2</option>
+                            <option value="28" id="P28" class="piano_key">(28) C3</option>
+                            <option value="29" style="background: #000000; color: #FFFFFF;" id="P29" class="piano_key">(29) C&#x266F;3 / D&#x266D;3</option>
+                            <option value="30" id="P30" class="piano_key">(30) D3</option>
+                            <option value="31" style="background: #000000; color: #FFFFFF;" id="P31" class="piano_key">(31) D&#x266F;3 / E&#x266D;3</option>
+                            <option value="32" id="P32" class="piano_key">(32) E3</option>
+                            <option value="33" id="P33" class="piano_key">(33) F3</option>
+                            <option value="34" style="background: #000000; color: #FFFFFF;" id="P34" class="piano_key">(34) F&#x266F;3 / G&#x266D;3</option>
+                            <option value="35" id="P35" class="piano_key">(35) G3</option>
+                            <option value="36" style="background: #000000; color: #FFFFFF;" id="P36" class="piano_key">(36) G&#x266F;3 / A&#x266D;3</option>
+                            <option value="37" id="P37" class="piano_key">(37) A3</option>
+                            <option value="38" style="background: #000000; color: #FFFFFF;" id="P38" class="piano_key">(38) A&#x266F;3 / B&#x266D;3</option>
+                            <option value="39" id="P39" class="piano_key">(39) B3</option>
+                            <option value="40" id="P40" class="piano_key">(40) C4</option>
+                            <option value="41" style="background: #000000; color: #FFFFFF;" id="P41" class="piano_key">(41) C&#x266F;4 / D&#x266D;4</option>
+                            <option value="42" id="P42" class="piano_key">(42) D4</option>
+                            <option value="43" style="background: #000000; color: #FFFFFF;" id="P43" class="piano_key">(43) D&#x266F;4 / E&#x266D;4</option>
+                            <option value="44" id="P44" class="piano_key">(44) E4</option>
+                            <option value="45" id="P45" class="piano_key">(45) F4</option>
+                            <option value="46" style="background: #000000; color: #FFFFFF;" id="P46" class="piano_key">(46) F&#x266F;4 / G&#x266D;4</option>
+                            <option value="47" id="P47" class="piano_key">(47) G4</option>
+                            <option value="48" style="background: #000000; color: #FFFFFF;" id="P48" class="piano_key">(48) G&#x266F;4 / A&#x266D;4</option>
+                            <option value="49" id="P49" class="piano_key">(49) A4</option>
+                            <option value="50" style="background: #000000; color: #FFFFFF;" id="P50" class="piano_key">(50) A&#x266F;4 / B&#x266D;4</option>
+                            <option value="51" id="P51" class="piano_key">(51) B4</option>
+                            <option value="52" id="P52" class="piano_key">(52) C5</option>
+                            <option value="53" style="background: #000000; color: #FFFFFF;" id="P53" class="piano_key">(53) C&#x266F;5 / D&#x266D;5</option>
+                            <option value="54" id="P54" class="piano_key">(54) D5</option>
+                            <option value="55" style="background: #000000; color: #FFFFFF;" id="P55" class="piano_key">(55) D&#x266F;5 / E&#x266D;5</option>
+                            <option value="56" id="P56" class="piano_key">(56) E5</option>
+                            <option value="57" id="P57" class="piano_key">(57) F5</option>
+                            <option value="58" style="background: #000000; color: #FFFFFF;" id="P58" class="piano_key">(58) F&#x266F;5 / G&#x266D;5</option>
+                            <option value="59" id="P59" class="piano_key">(59) G5</option>
+                            <option value="60" style="background: #000000; color: #FFFFFF;" id="P60" class="piano_key">(60) G&#x266F;5 / A&#x266D;5</option>
+                            <option value="61" id="P61" class="piano_key">(61) A5</option>
+                            <option value="62" style="background: #000000; color: #FFFFFF;" id="P62" class="piano_key">(62) A&#x266F;5 / B&#x266D;5</option>
+                            <option value="63" id="P63" class="piano_key">(63) B5</option>
+                            <option value="64" id="P64" class="piano_key">(64) C6</option>
+                            <option value="65" style="background: #000000; color: #FFFFFF;" id="P65" class="piano_key">(65) C&#x266F;6 / D&#x266D;6</option>
+                            <option value="66" id="P66" class="piano_key">(66) D6</option>
+                            <option value="67" style="background: #000000; color: #FFFFFF;" id="P67" class="piano_key">(67) D&#x266F;6 / E&#x266D;6</option>
+                            <option value="68" id="P68" class="piano_key">(68) E6</option>
+                            <option value="69" id="P69" class="piano_key">(69) F6</option>
+                            <option value="70" style="background: #000000; color: #FFFFFF;" id="P70" class="piano_key">(70) F&#x266F;6 / G&#x266D;6</option>
+                            <option value="71" id="P71" class="piano_key">(71) G6</option>
+                            <option value="72" style="background: #000000; color: #FFFFFF;" id="P72" class="piano_key">(72) G&#x266F;6 / A&#x266D;6</option>
+                            <option value="73" id="P73" class="piano_key">(73) A6</option>
+                            <option value="74" style="background: #000000; color: #FFFFFF;" id="P74" class="piano_key">(74) A&#x266F;6 / B&#x266D;6</option>
+                            <option value="75" id="P75" class="piano_key">(75) B6</option>
+                            <option value="76" id="P76" class="piano_key">(76) C7</option>
+                            <option value="77" style="background: #000000; color: #FFFFFF;" id="P77" class="piano_key">(77) C&#x266F;7 / D&#x266D;7</option>
+                            <option value="78" id="P78" class="piano_key">(78) D7</option>
+                            <option value="79" style="background: #000000; color: #FFFFFF;" id="P79" class="piano_key">(79) D&#x266F;7 / E&#x266D;7</option>
+                            <option value="80" id="P80" class="piano_key">(80) E7</option>
+                            <option value="81" id="P81" class="piano_key">(81) F7</option>
+                            <option value="82" style="background: #000000; color: #FFFFFF;" id="P82" class="piano_key">(82) F&#x266F;7 / G&#x266D;7</option>
+                            <option value="83" id="P83" class="piano_key">(83) G7</option>
+                            <option value="84" style="background: #000000; color: #FFFFFF;" id="P84" class="piano_key">(84) G&#x266F;7 / A&#x266D;7</option>
+                            <option value="85" id="P85" class="piano_key">(85) A7</option>
+                            <option value="86" style="background: #000000; color: #FFFFFF;" id="P86" class="piano_key">(86) A&#x266F;7 / B&#x266D;7</option>
+                            <option value="87" id="P87" class="piano_key">(87) B7</option>
+                            <option value="88" id="P88" class="piano_key">(88) C8</option>
+                            <option value="89" style="background: #000000; color: #FFFFFF;" id="P89" class="piano_key">(89) C&#x266F;8 / D&#x266D;8</option>
+                            <option value="90" id="P90" class="piano_key">(90) D8</option>
+                            <option value="91" style="background: #000000; color: #FFFFFF;" id="P91" class="piano_key">(91) D&#x266F;8 / E&#x266D;8</option>
+                            <option value="92" id="P92" class="piano_key">(92) E8</option>
+                            <option value="93" id="P93" class="piano_key">(93) F8</option>
+                            <option value="94" style="background: #000000; color: #FFFFFF;" id="P94" class="piano_key">(94) F&#x266F;8 / G&#x266D;8</option>
+                            <option value="95" id="P95" class="piano_key">(95) G8</option>
+                            <option value="96" style="background: #000000; color: #FFFFFF;" id="P96" class="piano_key">(96) G&#x266F;8 / A&#x266D;8</option>
+                            <option value="97" id="P97" class="piano_key">(97) A8</option>
+                            <option value="98" style="background: #000000; color: #FFFFFF;" id="P98" class="piano_key">(98) A&#x266F;8 / B&#x266D;8</option>
+                            <option value="99" id="P99" class="piano_key">(99) B8</option>
+                            <option value="100" id="P100" class="piano_key">(100) C8</option>
+                        </select><BR /><BR />
+                        <span style="height: 24px;">Tuning Frequency</span><BR />
+                        <select id="tuning_standard">
+                            <option class="pitch_standard" id="a466">Renaissance (A = 466 Hz)</option>
+                            <option class="pitch_standard" id="a440" selected>Modern (A = 440 Hz)</option>
+                            <option class="pitch_standard" id="c256">Scientific (C = 256 Hz)</option>
+                            <option class="pitch_standard" id="a415">Baroque (A = 415 Hz)</option>
+                            <option class="pitch_standard" id="a392">French Baroque (A = 392 Hz)</option>
+                        </select>
+                    </td>
+                    <td id="NOISETYPE_SELECTORS" class="selector_box">
+                        <span class="SPACER" style="width: 22px;">&nbsp;</span>
+                        <span id="noise_info">Noise Type:</span><BR />
+                        <span>
+                            <span class="SPACER" style="width: 22px;">
+                                <input type="radio" name="type" id="rand_white" checked />
+                            </span>
+                            <label for="rand_white">Random</label>
+                        </span><BR />
+                        <span>
+                            <span class="SPACER" style="width: 22px;">
+                                <input type="radio" name="type" id="binary_white" />
+                            </span>
+                            <label for="binary_white">Bi-State</label>
+                        </span><BR />
+                        <span>
+                            <span class="SPACER" style="width: 22px;">
+                                <input type="radio" name="type" id="ternary_white" />
+                            </span>
+                            <label for="ternary_white">Tri-State</label>
+                        </span>
+                    </td>
+                    <td id="CLIPPING_SELECTORS" class="selector_box" colspan="2" style="text-align: center;">
+                        <span style="display: inline-block; text-align: left;">
+                            <span class="SPACER" style="width: 22px;">&nbsp;</span>
+                            <span id="noise_info">Clipping:</span><BR />
+                            <span>
+                                <span class="SPACER" style="width: 22px;">
+                                    <input type="radio" name="clip" id="unclip" checked />
+                                </span>
+                                <label for="unclip">None</label>
+                            </span><BR />
+                            <span>
+                                <span class="SPACER" style="width: 22px;">
+                                    <input type="radio" name="clip" id="clip_3db" />
+                                </span>
+                                <label for="clip_3db">&#x2212;3.01 dB</label>
+                            </span><BR />
+                            <span>
+                                <span class="SPACER" style="width: 22px;">
+                                    <input type="radio" name="clip" id="clip_6db" />
+                                </span>
+                                <label for="clip_6db">&#x2212;6.02 dB</label>
+                            </span><BR />
+                            <span>
+                                <span class="SPACER" style="width: 22px;">
+                                    <input type="radio" name="clip" id="clip_6db" />
+                                </span>
+                                <label for="clip_12db">&#x2212;12.04 dB</label>
+                            </span>
+                        </span>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="4" style="font-size: 6px;">
+                        <BR />
+                        <span id="vol_text" style="font-size: 14px;">Tone Volume</span><BR /><BR /><BR />
+                        <span class="slidecontainer">
+                            <input type="range" class="slider" id="osc_vol" min="0" max="65535" value="32768" style="width: 98%;" />
+                        </span><BR /><BR /><BR />
+                    </td>
+                    <td colspan="3" style="font-size: 6px;">
+                        <BR />
+                        <span id="vol_text" style="font-size: 14px;">Noise Volume</span><BR /><BR /><BR />
+                        <span class="slidecontainer">
+                            <input type="range" class="slider" id="noise_vol" min="0" max="65535" value="32768" style="width: 98%;" />
+                        </span><BR /><BR /><BR />
+                    </td>
+                </tr>
+                <tr id="SWITCHES">
+                    <td colspan="4">
+                        <a href="javascript:void(0);" id="oscillator_switch" style="height: 30px; width: 60px;">
+                            <span class="TRIG_LAB">&nbsp;&nbsp;<span id="OSC_TRIG_LAB" style="display: inline-block; width: 60px;">OFF</span>&nbsp;&nbsp;</span>
+                        </a>
+                    </td>
+                    <td colspan="3">
+                        <a href="javascript:void(0);" id="noise_switch" style="height: 30px; width: 60px;">
+                            <span class="TRIG_LAB">&nbsp;&nbsp;<span id="NOISE_TRIG_LAB" style="display: inline-block; width: 60px;">OFF</span>&nbsp;&nbsp;</span>
+                        </a>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="8" style="height: 28px;">Operating Sample Rate: <span id="sound_srate"></span> Hz</td>
+                </tr>
+                <tr class="desc">
+                    <td colspan="8">
+                        <p>The tone generator generates standard sine, triangle, square, and sawtooth waveforms.</p>
+                        <p>Simply enter the desired frequency by selecting "Text input" or use the dropdown to generate a tone corresponding to a desired musical note. All non-sinusoidal waveforms are anti-aliased as they are synthesised via additive synthesis. The sample rate that is used depends on the sample rate that your device's audio driver is set to, as well as your browser.</p>
+                    </td>
+                </tr>
+                <tr class="desc">
+                    <td colspan="8">
+                        <p>The noise generator can generate white, pink, and Brownian noise.</p>
+                        <p>White noise has a flat frequency spectrum, with equal power in bands that are linearly wide. For example, the range of frequencies between 100 and 200 Hz contains the same amount of sound power as the range between 1000 and 1200 Hz. Here, three possible generation modes are available.</p>
+                        <p class="desc_sub">Generating (pseudo)random numbers is the most common method used to generate white noise. When generating random noise, the output samples are simply random numbers greater than &#x2212;1 and less than 1, resulting in a peak-to-RMS ratio of $\sqrt{3} \approx 1.732051,$ slightly less than the 2:1 ratio common to much pop, rock, and electronic music nowadays.</p>
+                        <p class="desc_sub">Bi-state mode maps all non-negative random numbers to 1 and all negative numbers to &#x2212;1, so the output samples are either 1 or &#x2212;1. The peak voltage, without filtering, is the same as the RMS, similar to a square wave. Low peak-to-RMS ratios can be seen in heavily clipped or compressed programme material.</p>
+                        <p class="desc_sub">Tri-state mode maps all numbers between &#x2153; and 1 to 1, numbers between &#x2212;&#x200A;&#x2153; and &plus;&#x200A;&#x2153; to 0, and numbers between &#x2212;1 and &#x2212;&#x200A;&#x2153; to &#x2212;1. The peak-to-RMS ratio is $\sqrt{\frac{3}{2}} \approx 1.224745.$</p>
+                        <p>Pink noise has a spectrum that, when plotted on a logarithmic scale, slopes downwards at 10 dB/decade (3.01 dB/octave); it has equal power in bands that are proportionally wide. For example, the range of frequencies between 100 and 200 Hz contains the same sound power as 1000 to 2000 Hz. The peak-to-RMS ratio is 4.</p>
+                        <p>Brownian noise has a spectrum that slopes downward at 20 dB/decade (6.02 dB/octave), the same slope as a first-order RC or RL low-pass filter. Brownian noise is not named for it suggesting the colour brown but instead for Brownian ("random walk") motion.</p>
+                        <p>Various levels of clipping are also available for pink and Brownian noise.</p>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
     </body>
 </html>
