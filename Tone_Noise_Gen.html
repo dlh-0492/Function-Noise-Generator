@@ -205,33 +205,7 @@
         }
         </style>
         
-        <script type="text/javascript">
-        //<![CDATA[
-        
-        if (typeof(window.jQuery) === "undefined")
-        {
-            document.write("<scr" + "ipt type=\"text/javascript\" src=\"jquery.min.js\"></scr" + "ipt>");
-        }
-
-        if ((window.MathJax == "undefined") || (typeof(window.MathJax) === "undefined"))
-        {
-            window.MathJax = {
-                tex: {
-                    inlineMath: [["$", "$"], ["\\(", "\\)"], ["[;", ";]"]],
-                    displayMath: [["$$", "$$"], ["\\[", "\\]"]],
-                    processEscapes: true,
-                    processEnvironments: true,
-                    processRefs: true
-                },
-                svg: {
-                    fontCache: "global"
-                }
-            };
-            document.write("<scr" + "ipt type=\"text/javascript\" src=\"MathJax-master/es5/tex-chtml-full.js\"></scr" + "ipt>");
-        }
-
-        //]]>
-        </script>
+        <script type="text/javascript" src="jq_math_init.js"></script>
         <script type="text/javascript" src="esdf.js"></script>
         <script type="text/javascript">
         //<![CDATA[
@@ -256,15 +230,6 @@
         // French Baroque tuning (A4 = 392 Hz)
         const tuning_french_baroque = [0, 12.25, 12.978, 13.75, 14.568, 15.434, 16.352, 17.324, 18.354, 19.445, 20.602, 21.827, 23.125, 24.5, 25.956, 27.5, 29.135, 30.868, 32.703, 34.648, 36.708, 38.891, 41.203, 43.653, 46.25, 49, 51.913, 55, 58.27, 61.735, 65.406, 69.296, 73.416, 77.782, 82.406, 87.307, 92.5, 98, 103.826, 110, 116.541, 123.471, 130.813, 138.591, 146.832, 155.563, 164.814, 174.614, 185, 196, 207.652, 220, 233.082, 246.942, 261.626, 277.183, 293.665, 311.127, 329.628, 349.228, 370, 392, 415.305, 440, 466.164, 493.883, 523.251, 554.365, 587.33, 622.254, 659.255, 698.456, 740, 784, 830.609, 880, 932.328, 987.767, 1046.502, 1108.731, 1174.659, 1244.507, 1318.51, 1396.913, 1480, 1568, 1661.219, 1760, 1864.655, 1975.533, 2093.005, 2217.461, 2349.318, 2489.016, 2637.02, 2793.826, 2960, 3136, 3322.438, 3520, 3729.31, 3951.066, 4186.009, 4432.922, 4698.636, 4978.032, 5274.041, 5587.652, 5920, 6272, 6644.875, 7040, 7458.62];
 
-        // 31-Equal (Meantone, 1/4 comma) (A4 = 440 Hz)
-        const tuning_quartercomma_modern = [13.75, 14.061, 14.379, 14.704, 15.036, 15.376, 15.724, 16.08, 16.443, 16.815, 17.195, 17.584, 17.982, 18.388, 18.804, 19.229, 19.664, 20.109, 20.563, 21.028, 21.504, 21.99, 22.487, 22.996, 23.516, 24.047, 24.591, 25.147, 25.716, 26.297, 26.892, 27.5, 28.122, 28.758, 29.408, 30.072, 30.752, 31.448, 32.16, 32.886, 33.63, 34.39, 35.168, 35.964, 36.776, 37.608, 38.458, 39.328, 40.218, 41.126, 42.056, 43.008, 43.98, 44.974, 45.992, 47.032, 48.094, 49.182, 50.294, 51.432, 52.594, 53.784, 55, 56.244, 57.516, 58.816, 60.144, 61.504, 62.896, 64.32, 65.772, 67.26, 68.78, 70.336, 71.928, 73.552, 75.216, 76.916, 78.656, 80.436, 82.252, 84.112, 86.016, 87.96, 89.948, 91.984, 94.064, 96.188, 98.364, 100.588, 102.864, 105.188, 107.568, 110, 112.488, 115.032, 117.632, 120.288, 123.008, 125.792, 128.64, 131.544, 134.52, 137.56, 140.672, 143.856, 147.104, 150.432, 153.832, 157.312, 160.872, 164.504, 168.224, 172.032, 175.92, 179.896, 183.968, 188.128, 192.376, 196.728, 201.176, 205.728, 210.376, 215.136, 220, 224.976, 230.064, 235.264, 240.576, 246.016, 251.584, 257.28, 263.088, 269.04, 275.12, 281.344, 287.712, 294.208, 300.864, 307.664, 314.624, 321.744, 329.008, 336.448, 344.064, 351.84, 359.792, 367.936, 376.256, 384.752, 393.456, 402.352, 411.456, 420.752, 430.272, 440, 449.952, 460.128, 470.528, 481.152, 492.032, 503.168, 514.56, 526.176, 538.08, 550.24, 562.688, 575.424, 588.416, 601.728, 615.328, 629.248, 643.488, 658.016, 672.896, 688.128, 703.68, 719.584, 735.872, 752.512, 769.504, 786.912, 804.704, 822.912, 841.504, 860.544, 880, 899.904, 920.256, 941.056, 962.304, 984.064, 1006.336, 1029.12, 1052.352, 1076.16, 1100.48, 1125.376, 1150.848, 1176.832, 1203.456, 1230.656, 1258.496, 1286.976, 1316.032, 1345.792, 1376.256, 1407.36, 1439.168, 1471.744, 1505.024, 1539.008, 1573.824, 1609.408, 1645.824, 1683.008, 1721.088, 1760, 1799.808, 1840.512, 1882.112, 1924.608, 1968.128, 2012.672, 2058.24, 2104.704, 2152.32, 2200.96, 2250.752, 2301.696, 2353.664, 2406.912, 2461.312, 2516.992, 2573.952, 2632.064, 2691.584, 2752.512, 2814.72, 2878.336, 2943.488, 3010.048, 3078.016, 3147.648, 3218.816, 3291.648, 3366.016, 3442.176, 3520, 3599.616, 3681.024, 3764.224, 3849.216, 3936.256, 4025.344, 4116.48, 4209.408, 4304.64, 4401.92, 4501.504, 4603.392, 4707.328, 4813.824, 4922.624, 5033.984, 5147.904, 5264.128, 5383.168, 5505.024, 5629.44, 5756.672, 5886.976, 6020.096, 6156.032, 6295.296, 6437.632, 6583.296, 6732.032, 6884.352, 7040, 7199.232, 7362.048, 7528.448, 7698.432, 7872.512, 8050.688, 8232.96];
-        
-        // 31-Equal (Meantone, 1/4 comma) (A4 = 415 Hz)
-        const tuning_quartercomma_baroque = [12.96875, 13.262, 13.562, 13.869, 14.182, 14.503, 14.831, 15.166, 15.509, 15.86, 16.218, 16.585, 16.96, 17.343, 17.736, 18.137, 18.547, 18.966, 19.395, 19.834, 20.282, 20.741, 21.21, 21.689, 22.18, 22.681, 23.194, 23.718, 24.255, 24.803, 25.364, 25.9375, 26.524, 27.124, 27.738, 28.364, 29.006, 29.662, 30.332, 31.018, 31.72, 32.436, 33.17, 33.92, 34.686, 35.472, 36.274, 37.094, 37.932, 38.79, 39.668, 40.564, 41.482, 42.42, 43.378, 44.36, 45.362, 46.388, 47.436, 48.51, 49.606, 50.728, 51.876, 53.048, 54.248, 55.476, 56.728, 58.012, 59.324, 60.664, 62.036, 63.44, 64.872, 66.34, 67.84, 69.372, 70.944, 72.548, 74.188, 75.864, 77.58, 79.336, 81.128, 82.964, 84.84, 86.756, 88.72, 90.724, 92.776, 94.872, 97.02, 99.212, 101.456, 103.752, 106.096, 108.496, 110.952, 113.456, 116.024, 118.648, 121.328, 124.072, 126.88, 129.744, 132.68, 135.68, 138.744, 141.888, 145.096, 148.376, 151.728, 155.16, 158.672, 162.256, 165.928, 169.68, 173.512, 177.44, 181.448, 185.552, 189.744, 194.04, 198.424, 202.912, 207.5, 212.192, 216.992, 221.904, 226.912, 232.048, 237.296, 242.656, 248.144, 253.76, 259.488, 265.36, 271.36, 277.488, 283.776, 290.192, 296.752, 303.456, 310.32, 317.344, 324.512, 331.856, 339.36, 347.024, 354.88, 362.896, 371.104, 379.488, 388.08, 396.848, 405.824, 415, 424.384, 433.984, 443.808, 453.824, 464.096, 474.592, 485.312, 496.288, 507.52, 518.976, 530.72, 542.72, 554.976, 567.552, 580.384, 593.504, 606.912, 620.64, 634.688, 649.024, 663.712, 678.72, 694.048, 709.76, 725.792, 742.208, 758.976, 776.16, 793.696, 811.648, 830, 848.768, 867.968, 887.616, 907.648, 928.192, 949.184, 970.624, 992.576, 1015.04, 1037.952, 1061.44, 1085.44, 1109.952, 1135.104, 1160.768, 1187.008, 1213.824, 1241.28, 1269.376, 1298.048, 1327.424, 1357.44, 1388.096, 1419.52, 1451.584, 1484.416, 1517.952, 1552.32, 1587.392, 1623.296, 1660, 1697.536, 1735.936, 1775.232, 1815.296, 1856.384, 1898.368, 1941.248, 1985.152, 2030.08, 2075.904, 2122.88, 2170.88, 2219.904, 2270.208, 2321.536, 2374.016, 2427.648, 2482.56, 2538.752, 2596.096, 2654.848, 2714.88, 2776.192, 2839.04, 2903.168, 2968.832, 3035.904, 3104.64, 3174.784, 3246.592, 3320, 3395.072, 3471.872, 3550.464, 3630.592, 3712.768, 3796.736, 3882.496, 3970.304, 4060.16, 4151.808, 4245.76, 4341.76, 4439.808, 4540.416, 4643.072, 4748.032, 4855.296, 4965.12, 5077.504, 5192.192, 5309.696, 5429.76, 5552.384, 5678.08, 5806.336, 5937.664, 6071.808, 6209.28, 6349.568, 6493.184, 6640, 6790.144, 6943.744, 7100.928, 7261.184, 7425.536, 7593.472, 7764.992];
-
-        // 31-Equal (Meantone, 1/4 comma) (A4 = 392 Hz)
-        const tuning_quartercomma_frenchbaroque = [12.25, 12.527, 12.81, 13.1, 13.396, 13.699, 14.009, 14.326, 14.649, 14.981, 15.319, 15.666, 16.02, 16.382, 16.753, 17.132, 17.519, 17.915, 18.32, 18.734, 19.158, 19.591, 20.034, 20.487, 20.95, 21.424, 21.909, 22.404, 22.91, 23.429, 23.958, 24.5, 25.054, 25.62, 26.2, 26.792, 27.398, 28.018, 28.652, 29.298, 29.962, 30.638, 31.332, 32.04, 32.764, 33.506, 34.264, 35.038, 35.83, 36.64, 37.468, 38.316, 39.182, 40.068, 40.974, 41.9, 42.848, 43.818, 44.808, 45.82, 46.858, 47.916, 49, 50.108, 51.24, 52.4, 53.584, 54.796, 56.036, 57.304, 58.596, 59.924, 61.276, 62.664, 64.08, 65.528, 67.012, 68.528, 70.076, 71.66, 73.28, 74.936, 76.632, 78.364, 80.136, 81.948, 83.8, 85.696, 87.636, 89.616, 91.64, 93.716, 95.832, 98, 100.216, 102.48, 104.8, 107.168, 109.592, 112.072, 114.608, 117.192, 119.848, 122.552, 125.328, 128.16, 131.056, 134.024, 137.056, 140.152, 143.32, 146.56, 149.872, 153.264, 156.728, 160.272, 163.896, 167.6, 171.392, 175.272, 179.232, 183.28, 187.432, 191.664, 196, 200.432, 204.96, 209.6, 214.336, 219.184, 224.144, 229.216, 234.384, 239.696, 245.104, 250.656, 256.32, 262.112, 268.048, 274.112, 280.304, 286.64, 293.12, 299.744, 306.528, 313.456, 320.544, 327.792, 335.2, 342.784, 350.544, 358.464, 366.56, 374.864, 383.328, 392, 400.864, 409.92, 419.2, 428.672, 438.368, 448.288, 458.432, 468.768, 479.392, 490.208, 501.312, 512.64, 524.224, 536.096, 548.224, 560.608, 573.28, 586.24, 599.488, 613.056, 626.912, 641.088, 655.584, 670.4, 685.568, 701.088, 716.928, 733.12, 749.728, 766.656, 784, 801.728, 819.84, 838.4, 857.344, 876.736, 896.576, 916.864, 937.536, 958.784, 980.416, 1002.624, 1025.28, 1048.448, 1072.192, 1096.448, 1121.216, 1146.56, 1172.48, 1198.976, 1226.112, 1253.824, 1282.176, 1311.168, 1340.8, 1371.136, 1402.176, 1433.856, 1466.24, 1499.456, 1533.312, 1568, 1603.456, 1639.68, 1676.8, 1714.688, 1753.472, 1793.152, 1833.728, 1875.072, 1917.568, 1960.832, 2005.248, 2050.56, 2096.896, 2144.384, 2192.896, 2242.432, 2293.12, 2344.96, 2397.952, 2452.224, 2507.648, 2564.352, 2622.336, 2681.6, 2742.272, 2804.352, 2867.712, 2932.48, 2998.912, 3066.624, 3136, 3206.912, 3279.36, 3353.6, 3429.376, 3506.944, 3586.304, 3667.456, 3750.144, 3835.136, 3921.664, 4010.496, 4101.12, 4193.792, 4288.768, 4385.792, 4484.864, 4586.24, 4689.92, 4795.904, 4904.448, 5015.296, 5128.704, 5244.672, 5363.2, 5484.544, 5608.704, 5735.424, 5864.96, 5997.824, 6133.248, 6272, 6413.824, 6558.72, 6707.2, 6858.752, 7013.888, 7172.608, 7334.912];
-        
         function hardClip(s, t_high, t_low)
         {
             if (s > t_high)
@@ -488,7 +453,7 @@
             
             // Connect everything together
             noiseOutNode.connect(masterNode).connect(actx.destination);
-        
+
             $(document).ready(function() {
                 function tglc(nd, btn_id)
                 {
@@ -531,7 +496,7 @@
                         break;
                     }
                     
-                    $("option.piano_key").each((i, elem) => {
+                    $("option.key").each((i, elem) => {
                         $(elem).attr("data-freq", std[i]);
                     });
                 }
@@ -699,6 +664,10 @@
                 oscOutNode.gain.value = 0;
                 oscil.type = "sine";
                 oscil.frequency.setValueAtTime(440, actx.currentTime); // Value in hertz
+
+                $("option.key").each((i, elem) => {
+                    $(elem).attr("id", randID_header("piano_key"));
+                });
                 
                 $(document.body).css("display", "block");
             });
@@ -738,7 +707,7 @@
                         <label for="white_noise">White</label>
                     </td>
                     <td class="noise_selector">
-                        <input type="radio" name="noise" id="pink_noise" />
+                        <input type="radio" name="noise" data-keynum="Pink_noise" />
                         <label for="pink_noise" style="color: rgb(255, 0, 255);">Pink</label>
                     </td>
                     <td class="noise_selector">
@@ -754,119 +723,119 @@
                     <td colspan="2">
                         <span style="height: 24px;">Piano Key</span><BR />
                         <select id="key_num">
-                            <option value="NA" id="PNA" class="piano_key">Text Input</option>
-                            <option value="-11" id="P-11" class="piano_key">(&#x2212;11) A&#x2212;1</option>
-                            <option value="-10" style="background: #000000; color: #FFFFFF;" id="P-10" class="piano_key">(&#x2212;10) A&#x266F;&#x2212;1 / B&#x266D;&#x2212;1</option>
-                            <option value="-9" id="P-9" class="piano_key">(&#x2212;9) B-1</option>
-                            <option value="-8" id="P-8" class="piano_key">(&#x2212;8) C0</option>
-                            <option value="-7" style="background: #000000; color: #FFFFFF;" id="P-7" class="piano_key">(&#x2212;7) C&#x266F;0 / D&#x266D;0</option>
-                            <option value="-6" id="P-6" class="piano_key">(&#x2212;6) D0</option>
-                            <option value="-5" style="background: #000000; color: #FFFFFF;" id="P-5" class="piano_key">(&#x2212;5) D&#x266F;0 / E&#x266D;0</option>
-                            <option value="-4" id="P-4" class="piano_key">(&#x2212;4) E0</option>
-                            <option value="-3" id="P-3" class="piano_key">(&#x2212;3) F0</option>
-                            <option value="-2" style="background: #000000; color: #FFFFFF;" id="P-2" class="piano_key">(&#x2212;2) F&#x266F;0 / G&#x266D;0</option>
-                            <option value="-1" id="P-1" class="piano_key">(&#x2212;1) G0</option>
-                            <option value="0" style="background: #000000; color: #FFFFFF;" id="P0" class="piano_key">(0) G&#x266F;0 / A&#x266D;0</option>
-                            <option value="1" id="P1" class="piano_key">(1) A0</option>
-                            <option value="2" style="background: #000000; color: #FFFFFF;" id="P2" class="piano_key">(2) A&#x266F;0 / B&#x266D;0</option>
-                            <option value="3" id="P3" class="piano_key">(3) B0</option>
-                            <option value="4" id="P4" class="piano_key">(4) C1</option>
-                            <option value="5" style="background: #000000; color: #FFFFFF;" id="P5" class="piano_key">(5) C&#x266F;1 / D&#x266D;1</option>
-                            <option value="6" id="P6" class="piano_key">(6) D1</option>
-                            <option value="7" style="background: #000000; color: #FFFFFF;" id="P7" class="piano_key">(7) D&#x266F;1 / E&#x266D;1</option>
-                            <option value="8" id="P8" class="piano_key">(8) E1</option>
-                            <option value="9" id="P9" class="piano_key">(9) F1</option>
-                            <option value="10" style="background: #000000; color: #FFFFFF;" id="P10" class="piano_key">(10) F&#x266F;1 / G&#x266D;1</option>
-                            <option value="11" id="P11" class="piano_key">(11) G1</option>
-                            <option value="12" style="background: #000000; color: #FFFFFF;" id="P12" class="piano_key">(12) G&#x266F;1 / A&#x266D;1</option>
-                            <option value="13" id="P13" class="piano_key">(13) A1</option>
-                            <option value="14" style="background: #000000; color: #FFFFFF;" id="P14" class="piano_key">(14) A&#x266F;1 / B&#x266D;1</option>
-                            <option value="15" id="P15" class="piano_key">(15) B1</option>
-                            <option value="16" id="P16" class="piano_key">(16) C2</option>
-                            <option value="17" style="background: #000000; color: #FFFFFF;" id="P17" class="piano_key">(17) C&#x266F;2 / D&#x266D;2</option>
-                            <option value="18" id="P18" class="piano_key">(18) D2</option>
-                            <option value="19" style="background: #000000; color: #FFFFFF;" id="P19" class="piano_key">(19) D&#x266F;2 / E&#x266D;2</option>
-                            <option value="20" id="P20" class="piano_key">(20) E2</option>
-                            <option value="21" id="P21" class="piano_key">(21) F2</option>
-                            <option value="22" style="background: #000000; color: #FFFFFF;" id="P22" class="piano_key">(22) F&#x266F;2 / G&#x266D;2</option>
-                            <option value="23" id="P23" class="piano_key">(23) G2</option>
-                            <option value="24" style="background: #000000; color: #FFFFFF;" id="P24" class="piano_key">(24) G&#x266F;2 / A&#x266D;2</option>
-                            <option value="25" id="P25" class="piano_key">(25) A2</option>
-                            <option value="26" style="background: #000000; color: #FFFFFF;" id="P26" class="piano_key">(26) A&#x266F;2 / B&#x266D;2</option>
-                            <option value="27" id="P27" class="piano_key">(27) B2</option>
-                            <option value="28" id="P28" class="piano_key">(28) C3</option>
-                            <option value="29" style="background: #000000; color: #FFFFFF;" id="P29" class="piano_key">(29) C&#x266F;3 / D&#x266D;3</option>
-                            <option value="30" id="P30" class="piano_key">(30) D3</option>
-                            <option value="31" style="background: #000000; color: #FFFFFF;" id="P31" class="piano_key">(31) D&#x266F;3 / E&#x266D;3</option>
-                            <option value="32" id="P32" class="piano_key">(32) E3</option>
-                            <option value="33" id="P33" class="piano_key">(33) F3</option>
-                            <option value="34" style="background: #000000; color: #FFFFFF;" id="P34" class="piano_key">(34) F&#x266F;3 / G&#x266D;3</option>
-                            <option value="35" id="P35" class="piano_key">(35) G3</option>
-                            <option value="36" style="background: #000000; color: #FFFFFF;" id="P36" class="piano_key">(36) G&#x266F;3 / A&#x266D;3</option>
-                            <option value="37" id="P37" class="piano_key">(37) A3</option>
-                            <option value="38" style="background: #000000; color: #FFFFFF;" id="P38" class="piano_key">(38) A&#x266F;3 / B&#x266D;3</option>
-                            <option value="39" id="P39" class="piano_key">(39) B3</option>
-                            <option value="40" id="P40" class="piano_key">(40) C4</option>
-                            <option value="41" style="background: #000000; color: #FFFFFF;" id="P41" class="piano_key">(41) C&#x266F;4 / D&#x266D;4</option>
-                            <option value="42" id="P42" class="piano_key">(42) D4</option>
-                            <option value="43" style="background: #000000; color: #FFFFFF;" id="P43" class="piano_key">(43) D&#x266F;4 / E&#x266D;4</option>
-                            <option value="44" id="P44" class="piano_key">(44) E4</option>
-                            <option value="45" id="P45" class="piano_key">(45) F4</option>
-                            <option value="46" style="background: #000000; color: #FFFFFF;" id="P46" class="piano_key">(46) F&#x266F;4 / G&#x266D;4</option>
-                            <option value="47" id="P47" class="piano_key">(47) G4</option>
-                            <option value="48" style="background: #000000; color: #FFFFFF;" id="P48" class="piano_key">(48) G&#x266F;4 / A&#x266D;4</option>
-                            <option value="49" id="P49" class="piano_key">(49) A4</option>
-                            <option value="50" style="background: #000000; color: #FFFFFF;" id="P50" class="piano_key">(50) A&#x266F;4 / B&#x266D;4</option>
-                            <option value="51" id="P51" class="piano_key">(51) B4</option>
-                            <option value="52" id="P52" class="piano_key">(52) C5</option>
-                            <option value="53" style="background: #000000; color: #FFFFFF;" id="P53" class="piano_key">(53) C&#x266F;5 / D&#x266D;5</option>
-                            <option value="54" id="P54" class="piano_key">(54) D5</option>
-                            <option value="55" style="background: #000000; color: #FFFFFF;" id="P55" class="piano_key">(55) D&#x266F;5 / E&#x266D;5</option>
-                            <option value="56" id="P56" class="piano_key">(56) E5</option>
-                            <option value="57" id="P57" class="piano_key">(57) F5</option>
-                            <option value="58" style="background: #000000; color: #FFFFFF;" id="P58" class="piano_key">(58) F&#x266F;5 / G&#x266D;5</option>
-                            <option value="59" id="P59" class="piano_key">(59) G5</option>
-                            <option value="60" style="background: #000000; color: #FFFFFF;" id="P60" class="piano_key">(60) G&#x266F;5 / A&#x266D;5</option>
-                            <option value="61" id="P61" class="piano_key">(61) A5</option>
-                            <option value="62" style="background: #000000; color: #FFFFFF;" id="P62" class="piano_key">(62) A&#x266F;5 / B&#x266D;5</option>
-                            <option value="63" id="P63" class="piano_key">(63) B5</option>
-                            <option value="64" id="P64" class="piano_key">(64) C6</option>
-                            <option value="65" style="background: #000000; color: #FFFFFF;" id="P65" class="piano_key">(65) C&#x266F;6 / D&#x266D;6</option>
-                            <option value="66" id="P66" class="piano_key">(66) D6</option>
-                            <option value="67" style="background: #000000; color: #FFFFFF;" id="P67" class="piano_key">(67) D&#x266F;6 / E&#x266D;6</option>
-                            <option value="68" id="P68" class="piano_key">(68) E6</option>
-                            <option value="69" id="P69" class="piano_key">(69) F6</option>
-                            <option value="70" style="background: #000000; color: #FFFFFF;" id="P70" class="piano_key">(70) F&#x266F;6 / G&#x266D;6</option>
-                            <option value="71" id="P71" class="piano_key">(71) G6</option>
-                            <option value="72" style="background: #000000; color: #FFFFFF;" id="P72" class="piano_key">(72) G&#x266F;6 / A&#x266D;6</option>
-                            <option value="73" id="P73" class="piano_key">(73) A6</option>
-                            <option value="74" style="background: #000000; color: #FFFFFF;" id="P74" class="piano_key">(74) A&#x266F;6 / B&#x266D;6</option>
-                            <option value="75" id="P75" class="piano_key">(75) B6</option>
-                            <option value="76" id="P76" class="piano_key">(76) C7</option>
-                            <option value="77" style="background: #000000; color: #FFFFFF;" id="P77" class="piano_key">(77) C&#x266F;7 / D&#x266D;7</option>
-                            <option value="78" id="P78" class="piano_key">(78) D7</option>
-                            <option value="79" style="background: #000000; color: #FFFFFF;" id="P79" class="piano_key">(79) D&#x266F;7 / E&#x266D;7</option>
-                            <option value="80" id="P80" class="piano_key">(80) E7</option>
-                            <option value="81" id="P81" class="piano_key">(81) F7</option>
-                            <option value="82" style="background: #000000; color: #FFFFFF;" id="P82" class="piano_key">(82) F&#x266F;7 / G&#x266D;7</option>
-                            <option value="83" id="P83" class="piano_key">(83) G7</option>
-                            <option value="84" style="background: #000000; color: #FFFFFF;" id="P84" class="piano_key">(84) G&#x266F;7 / A&#x266D;7</option>
-                            <option value="85" id="P85" class="piano_key">(85) A7</option>
-                            <option value="86" style="background: #000000; color: #FFFFFF;" id="P86" class="piano_key">(86) A&#x266F;7 / B&#x266D;7</option>
-                            <option value="87" id="P87" class="piano_key">(87) B7</option>
-                            <option value="88" id="P88" class="piano_key">(88) C8</option>
-                            <option value="89" style="background: #000000; color: #FFFFFF;" id="P89" class="piano_key">(89) C&#x266F;8 / D&#x266D;8</option>
-                            <option value="90" id="P90" class="piano_key">(90) D8</option>
-                            <option value="91" style="background: #000000; color: #FFFFFF;" id="P91" class="piano_key">(91) D&#x266F;8 / E&#x266D;8</option>
-                            <option value="92" id="P92" class="piano_key">(92) E8</option>
-                            <option value="93" id="P93" class="piano_key">(93) F8</option>
-                            <option value="94" style="background: #000000; color: #FFFFFF;" id="P94" class="piano_key">(94) F&#x266F;8 / G&#x266D;8</option>
-                            <option value="95" id="P95" class="piano_key">(95) G8</option>
-                            <option value="96" style="background: #000000; color: #FFFFFF;" id="P96" class="piano_key">(96) G&#x266F;8 / A&#x266D;8</option>
-                            <option value="97" id="P97" class="piano_key">(97) A8</option>
-                            <option value="98" style="background: #000000; color: #FFFFFF;" id="P98" class="piano_key">(98) A&#x266F;8 / B&#x266D;8</option>
-                            <option value="99" id="P99" class="piano_key">(99) B8</option>
-                            <option value="100" id="P100" class="piano_key">(100) C8</option>
+                            <option value="NA" data-keynum="PNA" class="key">Text Input</option>
+                            <option value="-11" data-keynum="P-11" class="key">(&#x2212;11) A&#x2212;1</option>
+                            <option value="-10" style="background: #000000; color: #FFFFFF;" data-keynum="P-10" class="key">(&#x2212;10) A&#x266F;&#x2212;1 / B&#x266D;&#x2212;1</option>
+                            <option value="-9" data-keynum="P-9" class="key">(&#x2212;9) B-1</option>
+                            <option value="-8" data-keynum="P-8" class="key">(&#x2212;8) C0</option>
+                            <option value="-7" style="background: #000000; color: #FFFFFF;" data-keynum="P-7" class="key">(&#x2212;7) C&#x266F;0 / D&#x266D;0</option>
+                            <option value="-6" data-keynum="P-6" class="key">(&#x2212;6) D0</option>
+                            <option value="-5" style="background: #000000; color: #FFFFFF;" data-keynum="P-5" class="key">(&#x2212;5) D&#x266F;0 / E&#x266D;0</option>
+                            <option value="-4" data-keynum="P-4" class="key">(&#x2212;4) E0</option>
+                            <option value="-3" data-keynum="P-3" class="key">(&#x2212;3) F0</option>
+                            <option value="-2" style="background: #000000; color: #FFFFFF;" data-keynum="P-2" class="key">(&#x2212;2) F&#x266F;0 / G&#x266D;0</option>
+                            <option value="-1" data-keynum="P-1" class="key">(&#x2212;1) G0</option>
+                            <option value="0" style="background: #000000; color: #FFFFFF;" data-keynum="P0" class="key">(0) G&#x266F;0 / A&#x266D;0</option>
+                            <option value="1" data-keynum="P1" class="key">(1) A0</option>
+                            <option value="2" style="background: #000000; color: #FFFFFF;" data-keynum="P2" class="key">(2) A&#x266F;0 / B&#x266D;0</option>
+                            <option value="3" data-keynum="P3" class="key">(3) B0</option>
+                            <option value="4" data-keynum="P4" class="key">(4) C1</option>
+                            <option value="5" style="background: #000000; color: #FFFFFF;" data-keynum="P5" class="key">(5) C&#x266F;1 / D&#x266D;1</option>
+                            <option value="6" data-keynum="P6" class="key">(6) D1</option>
+                            <option value="7" style="background: #000000; color: #FFFFFF;" data-keynum="P7" class="key">(7) D&#x266F;1 / E&#x266D;1</option>
+                            <option value="8" data-keynum="P8" class="key">(8) E1</option>
+                            <option value="9" data-keynum="P9" class="key">(9) F1</option>
+                            <option value="10" style="background: #000000; color: #FFFFFF;" data-keynum="P10" class="key">(10) F&#x266F;1 / G&#x266D;1</option>
+                            <option value="11" data-keynum="P11" class="key">(11) G1</option>
+                            <option value="12" style="background: #000000; color: #FFFFFF;" data-keynum="P12" class="key">(12) G&#x266F;1 / A&#x266D;1</option>
+                            <option value="13" data-keynum="P13" class="key">(13) A1</option>
+                            <option value="14" style="background: #000000; color: #FFFFFF;" data-keynum="P14" class="key">(14) A&#x266F;1 / B&#x266D;1</option>
+                            <option value="15" data-keynum="P15" class="key">(15) B1</option>
+                            <option value="16" data-keynum="P16" class="key">(16) C2</option>
+                            <option value="17" style="background: #000000; color: #FFFFFF;" data-keynum="P17" class="key">(17) C&#x266F;2 / D&#x266D;2</option>
+                            <option value="18" data-keynum="P18" class="key">(18) D2</option>
+                            <option value="19" style="background: #000000; color: #FFFFFF;" data-keynum="P19" class="key">(19) D&#x266F;2 / E&#x266D;2</option>
+                            <option value="20" data-keynum="P20" class="key">(20) E2</option>
+                            <option value="21" data-keynum="P21" class="key">(21) F2</option>
+                            <option value="22" style="background: #000000; color: #FFFFFF;" data-keynum="P22" class="key">(22) F&#x266F;2 / G&#x266D;2</option>
+                            <option value="23" data-keynum="P23" class="key">(23) G2</option>
+                            <option value="24" style="background: #000000; color: #FFFFFF;" data-keynum="P24" class="key">(24) G&#x266F;2 / A&#x266D;2</option>
+                            <option value="25" data-keynum="P25" class="key">(25) A2</option>
+                            <option value="26" style="background: #000000; color: #FFFFFF;" data-keynum="P26" class="key">(26) A&#x266F;2 / B&#x266D;2</option>
+                            <option value="27" data-keynum="P27" class="key">(27) B2</option>
+                            <option value="28" data-keynum="P28" class="key">(28) C3</option>
+                            <option value="29" style="background: #000000; color: #FFFFFF;" data-keynum="P29" class="key">(29) C&#x266F;3 / D&#x266D;3</option>
+                            <option value="30" data-keynum="P30" class="key">(30) D3</option>
+                            <option value="31" style="background: #000000; color: #FFFFFF;" data-keynum="P31" class="key">(31) D&#x266F;3 / E&#x266D;3</option>
+                            <option value="32" data-keynum="P32" class="key">(32) E3</option>
+                            <option value="33" data-keynum="P33" class="key">(33) F3</option>
+                            <option value="34" style="background: #000000; color: #FFFFFF;" data-keynum="P34" class="key">(34) F&#x266F;3 / G&#x266D;3</option>
+                            <option value="35" data-keynum="P35" class="key">(35) G3</option>
+                            <option value="36" style="background: #000000; color: #FFFFFF;" data-keynum="P36" class="key">(36) G&#x266F;3 / A&#x266D;3</option>
+                            <option value="37" data-keynum="P37" class="key">(37) A3</option>
+                            <option value="38" style="background: #000000; color: #FFFFFF;" data-keynum="P38" class="key">(38) A&#x266F;3 / B&#x266D;3</option>
+                            <option value="39" data-keynum="P39" class="key">(39) B3</option>
+                            <option value="40" data-keynum="P40" class="key">(40) C4</option>
+                            <option value="41" style="background: #000000; color: #FFFFFF;" data-keynum="P41" class="key">(41) C&#x266F;4 / D&#x266D;4</option>
+                            <option value="42" data-keynum="P42" class="key">(42) D4</option>
+                            <option value="43" style="background: #000000; color: #FFFFFF;" data-keynum="P43" class="key">(43) D&#x266F;4 / E&#x266D;4</option>
+                            <option value="44" data-keynum="P44" class="key">(44) E4</option>
+                            <option value="45" data-keynum="P45" class="key">(45) F4</option>
+                            <option value="46" style="background: #000000; color: #FFFFFF;" data-keynum="P46" class="key">(46) F&#x266F;4 / G&#x266D;4</option>
+                            <option value="47" data-keynum="P47" class="key">(47) G4</option>
+                            <option value="48" style="background: #000000; color: #FFFFFF;" data-keynum="P48" class="key">(48) G&#x266F;4 / A&#x266D;4</option>
+                            <option value="49" data-keynum="P49" class="key">(49) A4</option>
+                            <option value="50" style="background: #000000; color: #FFFFFF;" data-keynum="P50" class="key">(50) A&#x266F;4 / B&#x266D;4</option>
+                            <option value="51" data-keynum="P51" class="key">(51) B4</option>
+                            <option value="52" data-keynum="P52" class="key">(52) C5</option>
+                            <option value="53" style="background: #000000; color: #FFFFFF;" data-keynum="P53" class="key">(53) C&#x266F;5 / D&#x266D;5</option>
+                            <option value="54" data-keynum="P54" class="key">(54) D5</option>
+                            <option value="55" style="background: #000000; color: #FFFFFF;" data-keynum="P55" class="key">(55) D&#x266F;5 / E&#x266D;5</option>
+                            <option value="56" data-keynum="P56" class="key">(56) E5</option>
+                            <option value="57" data-keynum="P57" class="key">(57) F5</option>
+                            <option value="58" style="background: #000000; color: #FFFFFF;" data-keynum="P58" class="key">(58) F&#x266F;5 / G&#x266D;5</option>
+                            <option value="59" data-keynum="P59" class="key">(59) G5</option>
+                            <option value="60" style="background: #000000; color: #FFFFFF;" data-keynum="P60" class="key">(60) G&#x266F;5 / A&#x266D;5</option>
+                            <option value="61" data-keynum="P61" class="key">(61) A5</option>
+                            <option value="62" style="background: #000000; color: #FFFFFF;" data-keynum="P62" class="key">(62) A&#x266F;5 / B&#x266D;5</option>
+                            <option value="63" data-keynum="P63" class="key">(63) B5</option>
+                            <option value="64" data-keynum="P64" class="key">(64) C6</option>
+                            <option value="65" style="background: #000000; color: #FFFFFF;" data-keynum="P65" class="key">(65) C&#x266F;6 / D&#x266D;6</option>
+                            <option value="66" data-keynum="P66" class="key">(66) D6</option>
+                            <option value="67" style="background: #000000; color: #FFFFFF;" data-keynum="P67" class="key">(67) D&#x266F;6 / E&#x266D;6</option>
+                            <option value="68" data-keynum="P68" class="key">(68) E6</option>
+                            <option value="69" data-keynum="P69" class="key">(69) F6</option>
+                            <option value="70" style="background: #000000; color: #FFFFFF;" data-keynum="P70" class="key">(70) F&#x266F;6 / G&#x266D;6</option>
+                            <option value="71" data-keynum="P71" class="key">(71) G6</option>
+                            <option value="72" style="background: #000000; color: #FFFFFF;" data-keynum="P72" class="key">(72) G&#x266F;6 / A&#x266D;6</option>
+                            <option value="73" data-keynum="P73" class="key">(73) A6</option>
+                            <option value="74" style="background: #000000; color: #FFFFFF;" data-keynum="P74" class="key">(74) A&#x266F;6 / B&#x266D;6</option>
+                            <option value="75" data-keynum="P75" class="key">(75) B6</option>
+                            <option value="76" data-keynum="P76" class="key">(76) C7</option>
+                            <option value="77" style="background: #000000; color: #FFFFFF;" data-keynum="P77" class="key">(77) C&#x266F;7 / D&#x266D;7</option>
+                            <option value="78" data-keynum="P78" class="key">(78) D7</option>
+                            <option value="79" style="background: #000000; color: #FFFFFF;" data-keynum="P79" class="key">(79) D&#x266F;7 / E&#x266D;7</option>
+                            <option value="80" data-keynum="P80" class="key">(80) E7</option>
+                            <option value="81" data-keynum="P81" class="key">(81) F7</option>
+                            <option value="82" style="background: #000000; color: #FFFFFF;" data-keynum="P82" class="key">(82) F&#x266F;7 / G&#x266D;7</option>
+                            <option value="83" data-keynum="P83" class="key">(83) G7</option>
+                            <option value="84" style="background: #000000; color: #FFFFFF;" data-keynum="P84" class="key">(84) G&#x266F;7 / A&#x266D;7</option>
+                            <option value="85" data-keynum="P85" class="key">(85) A7</option>
+                            <option value="86" style="background: #000000; color: #FFFFFF;" data-keynum="P86" class="key">(86) A&#x266F;7 / B&#x266D;7</option>
+                            <option value="87" data-keynum="P87" class="key">(87) B7</option>
+                            <option value="88" data-keynum="P88" class="key">(88) C8</option>
+                            <option value="89" style="background: #000000; color: #FFFFFF;" data-keynum="P89" class="key">(89) C&#x266F;8 / D&#x266D;8</option>
+                            <option value="90" data-keynum="P90" class="key">(90) D8</option>
+                            <option value="91" style="background: #000000; color: #FFFFFF;" data-keynum="P91" class="key">(91) D&#x266F;8 / E&#x266D;8</option>
+                            <option value="92" data-keynum="P92" class="key">(92) E8</option>
+                            <option value="93" data-keynum="P93" class="key">(93) F8</option>
+                            <option value="94" style="background: #000000; color: #FFFFFF;" data-keynum="P94" class="key">(94) F&#x266F;8 / G&#x266D;8</option>
+                            <option value="95" data-keynum="P95" class="key">(95) G8</option>
+                            <option value="96" style="background: #000000; color: #FFFFFF;" data-keynum="P96" class="key">(96) G&#x266F;8 / A&#x266D;8</option>
+                            <option value="97" data-keynum="P97" class="key">(97) A8</option>
+                            <option value="98" style="background: #000000; color: #FFFFFF;" data-keynum="P98" class="key">(98) A&#x266F;8 / B&#x266D;8</option>
+                            <option value="99" data-keynum="P99" class="key">(99) B8</option>
+                            <option value="100" data-keynum="P100" class="key">(100) C8</option>
                         </select><BR /><BR />
                         <span style="height: 24px;">Tuning Frequency</span><BR />
                         <select id="tuning_standard">
@@ -964,7 +933,7 @@
                 <tr class="desc">
                     <td colspan="8">
                         <p>The tone generator generates standard sine, triangle, square, and sawtooth waveforms.</p>
-                        <p>Simply enter the desired frequency by selecting "Text input" or use the dropdown to generate a tone corresponding to a desired musical note. All non-sinusoidal waveforms are anti-aliased as they are synthesised via additive synthesis. The sample rate that is used depends on the sample rate that your device's audio driver is set to, as well as your browser.</p>
+                        <p>Simply enter the desired frequency by selecting &quot;Text input&quot; or use the dropdown to generate a tone corresponding to a desired musical note. All non-sinusoidal waveforms are anti-aliased as they are synthesised via additive synthesis. The sample rate that is used depends on the sample rate that your device&#39;s audio driver is set to, as well as your browser.</p>
                     </td>
                 </tr>
                 <tr class="desc">
@@ -974,8 +943,8 @@
                         <p class="desc_sub">Generating (pseudo)random numbers is the most common method used to generate white noise. When generating random noise, the output samples are simply random numbers greater than &#x2212;1 and less than 1, resulting in a peak-to-RMS ratio of $\sqrt{3} \approx 1.732051,$ slightly less than the 2:1 ratio common to much pop, rock, and electronic music nowadays.</p>
                         <p class="desc_sub">Bi-state mode maps all non-negative random numbers to 1 and all negative numbers to &#x2212;1, so the output samples are either 1 or &#x2212;1. The peak voltage, without filtering, is the same as the RMS, similar to a square wave. Low peak-to-RMS ratios can be seen in heavily clipped or compressed programme material.</p>
                         <p class="desc_sub">Tri-state mode maps all numbers between &#x2153; and 1 to 1, numbers between &#x2212;&#x200A;&#x2153; and &plus;&#x200A;&#x2153; to 0, and numbers between &#x2212;1 and &#x2212;&#x200A;&#x2153; to &#x2212;1. The peak-to-RMS ratio is $\sqrt{\frac{3}{2}} \approx 1.224745.$</p>
-                        <p>Pink noise has a spectrum that, when plotted on a logarithmic scale, slopes downwards at 10 dB/decade (3.01 dB/octave); it has equal power in bands that are proportionally wide. For example, the range of frequencies between 100 and 200 Hz contains the same sound power as 1000 to 2000 Hz. The peak-to-RMS ratio is 4.</p>
-                        <p>Brownian noise has a spectrum that slopes downward at 20 dB/decade (6.02 dB/octave), the same slope as a first-order RC or RL low-pass filter. Brownian noise is not named for it suggesting the colour brown but instead for Brownian ("random walk") motion.</p>
+                        <p>Pink noise has a spectrum that, when plotted on a logarithmic scale, slopes downwards at 10&nbsp;dB/decade (3.01&nbsp;dB/octave); it has equal power in bands that are proportionally wide. For example, the range of frequencies between 100 and 200 Hz contains the same sound power as 1000 to 2000 Hz. The peak-to-RMS ratio is 4.</p>
+                        <p>Brownian noise has a spectrum that slopes downward at 20&nbsp;dB/decade (6.02&nbsp;dB/octave), the same slope as a first-order RC or RL low-pass filter. Brownian noise is not named for it suggesting the colour brown but instead for Brownian (&quot;random walk&quot;) motion.</p>
                         <p>Various levels of clipping are also available for pink and Brownian noise.</p>
                     </td>
                 </tr>
