@@ -4,15 +4,15 @@
     <head>
         <title>Function and Noise Generator</title>
 
-        <meta http-equiv="CONTENT-TYPE" content="text/html; charset=UTF-8" />
+        <meta charset="utf-8" />
         <meta http-equiv="X-UA-Compatible" content="IE=edge" />
         <meta name="ROBOTS" content="index, nofollow" />
-        <meta name="GOOGLEBOT" content="noindex, nofollow" />
+        <meta name="GOOGLEBOT" content="index, nofollow" />
 
         <style type="text/css">
         body
         {
-            font-family: Helvetica, Helvetica Neue, Arial, sans-serif;
+            font-family: Helvetica, "Helvetica Neue", Arial, sans-serif;
             text-align: center;
         }
         
@@ -95,7 +95,6 @@
         <style type="text/css">
         input[type="range"]
         {
-            -webkit-appearance: none;
             margin: 18px 0;
             width: 100%;
         }
@@ -205,15 +204,23 @@
         }
         </style>
         
-        <script type="text/javascript" src="jq_math_init.js"></script>
-        <script type="text/javascript" src="esdf.js"></script>
+        <script type="text/javascript">
+        //<![CDATA[
+
+        if (typeof(window.jQuery) === "undefined")
+        {
+            document.write('<scr' + 'ipt type="text/javascript" src="jquery.min.js"></scr' + 'ipt>');
+        }
+
+        //]]>
+        </script>
         <script type="text/javascript">
         //<![CDATA[
         
-        var using_keys = false;
-        var white_type = 0;
-        var pink_clipping = 0;
-        var brown_clipping = 0;
+        let using_keys = false;
+        let white_type = 0;
+        let pink_clipping = 0;
+        let brown_clipping = 0;
         
         // Renaissance tuning (A4 = 466 Hz)
         const tuning_renaissance = [0, 14.563, 15.428, 16.346, 17.318, 18.348, 19.439, 20.594, 21.819, 23.117, 24.491, 25.947, 27.49, 29.125, 30.857, 32.692, 34.636, 36.695, 38.877, 41.189, 43.638, 46.233, 48.982, 51.895, 54.981, 58.25, 61.714, 65.383, 69.271, 73.39, 77.754, 82.378, 87.276, 92.466, 97.964, 103.79, 109.961, 116.5, 123.427, 130.767, 138.543, 146.781, 155.509, 164.756, 174.553, 184.932, 195.929, 207.579, 219.923, 233, 246.855, 261.534, 277.085, 293.562, 311.018, 329.512, 349.106, 369.864, 391.858, 415.159, 439.845, 466, 493.71, 523.067, 554.171, 587.123, 622.035, 659.024, 698.211, 739.729, 783.715, 830.318, 879.691, 932, 987.42, 1046.135, 1108.341, 1174.246, 1244.071, 1318.047, 1396.422, 1479.458, 1567.431, 1660.635, 1759.382, 1864, 1974.839, 2092.269, 2216.682, 2348.493, 2488.141, 2636.094, 2792.844, 2958.916, 3134.862, 3321.27, 3518.763, 3728, 3949.678, 4184.539, 4433.364, 4696.986, 4976.283, 5272.188, 5585.689, 5917.831, 6269.724, 6642.541, 7037.527, 7456, 7899.357, 8369.077, 8866.728];
@@ -249,18 +256,18 @@
             return hardClip(s, t_high, t_low) / Math.max(t_high, t_low);
         }
         
-        var AudioContext = (window.webkitAudioContext || window.mozAudioContext || window.msAudioContext || window.oAudioContext || window.AudioContext);
+        let AudioContext = (window.webkitAudioContext || window.mozAudioContext || window.msAudioContext || window.oAudioContext || window.AudioContext);
 
         if (AudioContext)
         {
-            var actx = new AudioContext();
-            var masterNode = actx.createGain();
+            let actx = new AudioContext();
+            let masterNode = actx.createGain();
             masterNode.gain.value = 1;
 
             // Oscillator
-            var oscil = actx.createOscillator();
-            var oscNode = actx.createGain();
-            var oscOutNode = actx.createGain();
+            let oscil = actx.createOscillator();
+            let oscNode = actx.createGain();
+            let oscOutNode = actx.createGain();
 
             oscil.connect(oscNode);
             oscNode.connect(oscOutNode);
@@ -302,13 +309,13 @@
                     /**
                      * Generate white noise
                      */
-                    var node = this.createScriptProcessor(bufferSize, b, r);
+                    let node = this.createScriptProcessor(bufferSize, b, r);
                     node.onaudioprocess = function(e) {
-                        var output = e.outputBuffer.getChannelData(0);
+                        let output = e.outputBuffer.getChannelData(0);
 
-                        for (var i = 0; i < bufferSize; i++)
+                        for (let i = 0; i < bufferSize; i++)
                         {
-                            var white = Math.random() * 2 - 1;
+                            let white = Math.random() * 2 - 1;
                             switch (white_type)
                             {
                                 case 1:
@@ -331,36 +338,33 @@
                     /**
                      * Generate pink noise
                      */
-                    var a0 = 0, a1 = 0, a2 = 0, a3 = 0, a4 = 0, a5 = 0, a6 = 0, s = 0;
-                    var node = this.createScriptProcessor(bufferSize, b, r);
+                    let a0 = 0, a1 = 0, a2 = 0, a3 = 0, a4 = 0, a5 = 0, a6 = 0, s = 0;
+                    const sclr = Math.sqrt(2000 / actx.sampleRate); // Compensate for gain
+                    let node = this.createScriptProcessor(bufferSize, b, r);
                     node.onaudioprocess = function(e) {
-                        var output = e.outputBuffer.getChannelData(0);
+                        let output = e.outputBuffer.getChannelData(0);
 
-                        for (var i = 0; i < bufferSize; i++) 
+                        for (let i = 0; i < bufferSize; i++) 
                         {
                             /**
                              * Filter to approximate 10 dB per decade
                              * 
-                             * Based on Paul Kellet's "instrumentation grade" algorithm (see http://www.firstpr.com.au/dsp/pink-noise/),
-                             * this is a filter that approximates a 10 dB/decade filter by using a weighted sum of first-order filters.
-                             * At a sample rate of 44100 Hz, it is accurate to within +/- 0.1 dB down to 9.2 Hz. Unity gain is at half the
-                             * sampling frequency (i.e. the Nyquist frequency), but can be scaled down by multiplying the magnitude of the 
-                             * output sample by a correction factor. 
+                             * Based on Paul Kellet's "instrumentation grade" algorithm (see
+                             * http://www.firstpr.com.au/dsp/pink-noise/), this is a filter that approximates a 10 dB/decade
+                             * filter by using a weighted sum of first-order filters. At a sample rate of 44100 Hz, it is
+                             * accurate to within +/- 0.1 dB down to 9.2 Hz. Unity gain is at one-half of the sampling
+                             * frequency (i.e. the Nyquist frequency), but my implementation scales the output level down such
+                             * that unity gain occurs at 1 kHz instead.
                              */
-                            var white = Math.random() * 2 - 1;
+                            let white = Math.random() * 2 - 1;
                             a0 = 0.99886 * a0 + white * 0.0555179;
                             a1 = 0.99332 * a1 + white * 0.0750759;
                             a2 = 0.96900 * a2 + white * 0.1538520;
                             a3 = 0.86650 * a3 + white * 0.3104856;
                             a4 = 0.55000 * a4 + white * 0.5329522;
                             a5 = -0.76160 * a5 - white * 0.0168980;
-                            s = (a0 + a1 + a2 + a3 + a4 + a5 + a6 + white * 0.5362) * 0.1289; // Roughly compensate for gain
+                            s = (a0 + a1 + a2 + a3 + a4 + a5 + a6 + white * 0.5362) * sclr;
                             a6 = white * 0.115926;
-
-                            if (Math.abs(s) > 1)
-                            {
-                                continue;
-                            }
 
                             switch (pink_clipping)
                             {
@@ -387,18 +391,18 @@
                     /**
                      * Generate Brownian noise 
                      */
-                    var s = 0;
-                    var node = this.createScriptProcessor(bufferSize, b, r);
+                    let s = 0;
+                    let node = this.createScriptProcessor(bufferSize, b, r);
                     node.onaudioprocess = function(e) {
-                        var output = e.outputBuffer.getChannelData(0);
-                        var leakage = hardClip(1 - 144.0 / actx.sampleRate, 0.999999, 0);
-                        var scaling = hardClip(9.0 / Math.sqrt(actx.sampleRate), 10, 0.000001);
+                        let output = e.outputBuffer.getChannelData(0);
+                        let leakage = hardClip(1 - 144.0 / actx.sampleRate, 0.9999999, 0);
+                        let scaling = hardClip(9.0 / Math.sqrt(actx.sampleRate), 10, 0.0000001);
 
-                        for (var i = 0; i < bufferSize; i++)
+                        for (let i = 0; i < bufferSize; i++)
                         {
-                            var white = Math.random() * 2 - 1;
-                            var z0 = leakage * s - white * scaling;
-                            var z1 = leakage * s + white * scaling;
+                            let white = Math.random() * 2 - 1;
+                            let z0 = leakage * s - white * scaling;
+                            let z1 = leakage * s + white * scaling;
                             s = ((Math.abs(z1) > 1.0) ? z0 : z1);
 
                             switch (brown_clipping)
@@ -425,24 +429,24 @@
             // End Noise.js
             
             // Set up gain and switch nodes
-            var noiseNode = actx.createGain();
-            var noiseOutNode = actx.createGain();
+            let noiseNode = actx.createGain();
+            let noiseOutNode = actx.createGain();
 
             // Set up white noise 
-            var whiteNoise = actx.createWhiteNoise(defaultBufferSize, false);
-            var whiteGain = actx.createGain();
+            let whiteNoise = actx.createWhiteNoise(defaultBufferSize, false);
+            let whiteGain = actx.createGain();
             whiteGain.gain.value = 1;
             whiteNoise.connect(whiteGain).connect(noiseNode);
 
             // Set up pink noise 
-            var pinkNoise = actx.createPinkNoise(defaultBufferSize);
-            var pinkGain = actx.createGain();
+            let pinkNoise = actx.createPinkNoise(defaultBufferSize);
+            let pinkGain = actx.createGain();
             pinkGain.gain.value = 0;
             pinkNoise.connect(pinkGain).connect(noiseNode);
 
             // Set up Brownian noise 
-            var brownNoise = actx.createBrownNoise(defaultBufferSize);
-            var brownGain = actx.createGain();
+            let brownNoise = actx.createBrownNoise(defaultBufferSize);
+            let brownGain = actx.createGain();
             brownGain.gain.value = 0;
             brownNoise.connect(brownGain).connect(noiseNode);
 
@@ -457,8 +461,8 @@
             $(document).ready(function() {
                 function tglc(nd, btn_id)
                 {
-                    var btn = document.getElementById(btn_id);
-                    var t = actx.currentTime;
+                    let btn = document.getElementById(btn_id);
+                    let t = actx.currentTime;
 
                     if (!nd.gain.value)
                     {
@@ -476,7 +480,7 @@
 
                 function change_tuning(pitch)
                 {
-                    var std;
+                    let std;
                     switch (pitch)
                     {
                         case "a466":
@@ -563,14 +567,14 @@
                         break;
                         case "key_num":
                         (function(f) {
-                            var x = $("#key_num").children("option:selected").attr("data-freq");
+                            let x = $("#key_num").children("option:selected").attr("data-freq");
                             if (!isEvaluable(f))
                             {
                                 using_keys = false;
                             }
                             else
                             {
-                                var y = parseFloat(x);
+                                let y = parseFloat(x);
                                 $("#freq").val(y);
                                 oscil.frequency.setValueAtTime(y, actx.currentTime);
                                 using_keys = true;
@@ -581,19 +585,17 @@
                         case "tuning_standard":
                         (function() {
                             change_tuning($("#tuning_standard").children("option:selected").attr("id"));
-                            var x = $("#key_num").children("option:selected").attr("data-freq");
+                            let x = $("#key_num").children("option:selected").attr("data-freq");
                             if (using_keys)
                             {
-                                var z = parseFloat(x);
+                                let z = parseFloat(x);
                                 $("#freq").val(z);
                                 oscil.frequency.setValueAtTime(z, actx.currentTime);
                             }
                         })();
                         break;
                     }
-                });
-
-                $("#TYPE_SELECTORS").on("click", function(evt) {
+                }).on("click", function(evt) {
                     let tgt = evt.target;
 
                     switch (tgt.id)
@@ -631,20 +633,19 @@
 
                 $("#SWITCHES").on("click", function(evt) {
                     let tgt = evt.target;
-                    var oscvol = document.getElementById("osc_vol");
-                    var noisevol = document.getElementById("noise_vol");
+                    let oscvol = document.getElementById("osc_vol");
+                    let noisevol = document.getElementById("noise_vol");
 
                     actx.resume().then(() => {
                         if (["oscillator_switch", "OSC_TRIG_LAB"].indexOf(tgt.id) >= 0)
                         {
                             tglc(oscOutNode, "OSC_TRIG_LAB");
-                            return 0;
                         }
                         else if (["noise_switch", "NOISE_TRIG_LAB"].indexOf(tgt.id) >= 0)
                         {
                             tglc(noiseOutNode, "NOISE_TRIG_LAB");
-                            return 0;
                         }
+                        return 0;
                     });
                 });
 
@@ -664,10 +665,6 @@
                 oscOutNode.gain.value = 0;
                 oscil.type = "sine";
                 oscil.frequency.setValueAtTime(440, actx.currentTime); // Value in hertz
-
-                $("option.key").each((i, elem) => {
-                    $(elem).attr("id", randID_header("piano_key"));
-                });
                 
                 $(document.body).css("display", "block");
             });
@@ -707,7 +704,7 @@
                         <label for="white_noise">White</label>
                     </td>
                     <td class="noise_selector">
-                        <input type="radio" name="noise" data-keynum="Pink_noise" />
+                        <input type="radio" name="noise" id="pink_noise" />
                         <label for="pink_noise" style="color: rgb(255, 0, 255);">Pink</label>
                     </td>
                     <td class="noise_selector">
@@ -724,17 +721,17 @@
                         <span style="height: 24px;">Piano Key</span><BR />
                         <select id="key_num">
                             <option value="NA" data-keynum="PNA" class="key">Text Input</option>
-                            <option value="-11" data-keynum="P-11" class="key">(&#x2212;11) A&#x2212;1</option>
-                            <option value="-10" style="background: #000000; color: #FFFFFF;" data-keynum="P-10" class="key">(&#x2212;10) A&#x266F;&#x2212;1 / B&#x266D;&#x2212;1</option>
-                            <option value="-9" data-keynum="P-9" class="key">(&#x2212;9) B-1</option>
-                            <option value="-8" data-keynum="P-8" class="key">(&#x2212;8) C0</option>
-                            <option value="-7" style="background: #000000; color: #FFFFFF;" data-keynum="P-7" class="key">(&#x2212;7) C&#x266F;0 / D&#x266D;0</option>
-                            <option value="-6" data-keynum="P-6" class="key">(&#x2212;6) D0</option>
-                            <option value="-5" style="background: #000000; color: #FFFFFF;" data-keynum="P-5" class="key">(&#x2212;5) D&#x266F;0 / E&#x266D;0</option>
-                            <option value="-4" data-keynum="P-4" class="key">(&#x2212;4) E0</option>
-                            <option value="-3" data-keynum="P-3" class="key">(&#x2212;3) F0</option>
-                            <option value="-2" style="background: #000000; color: #FFFFFF;" data-keynum="P-2" class="key">(&#x2212;2) F&#x266F;0 / G&#x266D;0</option>
-                            <option value="-1" data-keynum="P-1" class="key">(&#x2212;1) G0</option>
+                            <option value="-11" data-keynum="P-11" class="key">(&minus;11) A&minus;1</option>
+                            <option value="-10" style="background: #000000; color: #FFFFFF;" data-keynum="P-10" class="key">(&minus;10) A&#x266F;&minus;1 / B&#x266D;&minus;1</option>
+                            <option value="-9" data-keynum="P-9" class="key">(&minus;9) B&minus;1</option>
+                            <option value="-8" data-keynum="P-8" class="key">(&minus;8) C0</option>
+                            <option value="-7" style="background: #000000; color: #FFFFFF;" data-keynum="P-7" class="key">(&minus;7) C&#x266F;0 / D&#x266D;0</option>
+                            <option value="-6" data-keynum="P-6" class="key">(&minus;6) D0</option>
+                            <option value="-5" style="background: #000000; color: #FFFFFF;" data-keynum="P-5" class="key">(&minus;5) D&#x266F;0 / E&#x266D;0</option>
+                            <option value="-4" data-keynum="P-4" class="key">(&minus;4) E0</option>
+                            <option value="-3" data-keynum="P-3" class="key">(&minus;3) F0</option>
+                            <option value="-2" style="background: #000000; color: #FFFFFF;" data-keynum="P-2" class="key">(&minus;2) F&#x266F;0 / G&#x266D;0</option>
+                            <option value="-1" data-keynum="P-1" class="key">(&minus;1) G0</option>
                             <option value="0" style="background: #000000; color: #FFFFFF;" data-keynum="P0" class="key">(0) G&#x266F;0 / A&#x266D;0</option>
                             <option value="1" data-keynum="P1" class="key">(1) A0</option>
                             <option value="2" style="background: #000000; color: #FFFFFF;" data-keynum="P2" class="key">(2) A&#x266F;0 / B&#x266D;0</option>
@@ -882,19 +879,19 @@
                                 <span class="SPACER" style="width: 22px;">
                                     <input type="radio" name="clip" id="clip_3db" />
                                 </span>
-                                <label for="clip_3db">&#x2212;3.01 dB</label>
+                                <label for="clip_3db">&minus;3.01 dB</label>
                             </span><BR />
                             <span>
                                 <span class="SPACER" style="width: 22px;">
                                     <input type="radio" name="clip" id="clip_6db" />
                                 </span>
-                                <label for="clip_6db">&#x2212;6.02 dB</label>
+                                <label for="clip_6db">&minus;6.02 dB</label>
                             </span><BR />
                             <span>
                                 <span class="SPACER" style="width: 22px;">
                                     <input type="radio" name="clip" id="clip_6db" />
                                 </span>
-                                <label for="clip_12db">&#x2212;12.04 dB</label>
+                                <label for="clip_12db">&minus;12.04 dB</label>
                             </span>
                         </span>
                     </td>
@@ -933,18 +930,26 @@
                 <tr class="desc">
                     <td colspan="8">
                         <p>The tone generator generates standard sine, triangle, square, and sawtooth waveforms.</p>
-                        <p>Simply enter the desired frequency by selecting &quot;Text input&quot; or use the dropdown to generate a tone corresponding to a desired musical note. All non-sinusoidal waveforms are anti-aliased as they are synthesised via additive synthesis. The sample rate that is used depends on the sample rate that your device&#39;s audio driver is set to, as well as your browser.</p>
+                        <p>Simply enter the desired frequency by selecting &ldquo;Text input&rdquo; or use the dropdown to generate a tone corresponding to a desired musical note. All non-sinusoidal waveforms are anti-aliased as they are synthesised via additive synthesis. The sample rate that is used depends on the sample rate that your device&rsquo;s audio driver is set to, as well as your browser.</p>
                     </td>
                 </tr>
                 <tr class="desc">
                     <td colspan="8">
                         <p>The noise generator can generate white, pink, and Brownian noise.</p>
-                        <p>White noise has a flat frequency spectrum, with equal power in bands that are linearly wide. For example, the range of frequencies between 100 and 200 Hz contains the same amount of sound power as the range between 1000 and 1200 Hz. Here, three possible generation modes are available.</p>
-                        <p class="desc_sub">Generating (pseudo)random numbers is the most common method used to generate white noise. When generating random noise, the output samples are simply random numbers greater than &#x2212;1 and less than 1, resulting in a peak-to-RMS ratio of $\sqrt{3} \approx 1.732051,$ slightly less than the 2:1 ratio common to much pop, rock, and electronic music nowadays.</p>
-                        <p class="desc_sub">Bi-state mode maps all non-negative random numbers to 1 and all negative numbers to &#x2212;1, so the output samples are either 1 or &#x2212;1. The peak voltage, without filtering, is the same as the RMS, similar to a square wave. Low peak-to-RMS ratios can be seen in heavily clipped or compressed programme material.</p>
-                        <p class="desc_sub">Tri-state mode maps all numbers between &#x2153; and 1 to 1, numbers between &#x2212;&#x200A;&#x2153; and &plus;&#x200A;&#x2153; to 0, and numbers between &#x2212;1 and &#x2212;&#x200A;&#x2153; to &#x2212;1. The peak-to-RMS ratio is $\sqrt{\frac{3}{2}} \approx 1.224745.$</p>
-                        <p>Pink noise has a spectrum that, when plotted on a logarithmic scale, slopes downwards at 10&nbsp;dB/decade (3.01&nbsp;dB/octave); it has equal power in bands that are proportionally wide. For example, the range of frequencies between 100 and 200 Hz contains the same sound power as 1000 to 2000 Hz. The peak-to-RMS ratio is 4.</p>
-                        <p>Brownian noise has a spectrum that slopes downward at 20&nbsp;dB/decade (6.02&nbsp;dB/octave), the same slope as a first-order RC or RL low-pass filter. Brownian noise is not named for it suggesting the colour brown but instead for Brownian (&quot;random walk&quot;) motion.</p>
+                        <p>White noise has a flat frequency spectrum, with equal power in bands that are linearly wide. For example, the range of frequencies between 100 and 200&nbsp;Hz contains the same amount of sound power as the range between 1,000 and 1,100&nbsp;Hz. Here, three possible generation modes are available:</p>
+                        <ul>
+                            <li>
+                                Generating (pseudo)random numbers is the most common method used to generate white noise. When generating random noise, the output samples are simply random numbers greater than &minus;1 and less than 1. The peak-to-RMS ratio is equal to the square root of 3 (about 1.732:1), slightly less than the 2:1 ratio commonly seen in recordings of pop, rock, and electronic music nowadays without excessive compression.
+                            </li>
+                            <li>
+                                Bi-state mode maps all non-negative random numbers to 1 and all negative numbers to &minus;1, so the output samples are either 1 or &minus;1. The peak voltage, without filtering, is equal or approximately equal to the RMS voltage, similar to an ideal square wave. Low peak-to-RMS ratios can be seen in heavily distorted or compressed programme material.
+                            </li>
+                            <li>
+                                Tri-state mode maps all values between &#x2153; and 1 to 1, between &minus;&#x200A;&#x2153; and +&#x200A;&#x2153; to 0, and between &minus;1 and &minus;&#x200A;&#x2153; to &minus;1. The peak-to-RMS ratio is equal to the square root of 3/2, or 1.225:1.
+                            </li>
+                        </ul>
+                        <p>Pink noise has a spectrum that, when plotted on a logarithmic scale, slopes downwards at 10&nbsp;dB/decade (3.01&nbsp;dB/octave); it has equal power in bands that are proportionally wide. For example, the range of frequencies between 100 and 200&nbsp;Hz contains the same sound power as 1,000 to 2,000&nbsp;Hz. The peak-to-RMS ratio is 4:1.</p>
+                        <p>Brownian noise has a spectrum that slopes downward at 20&nbsp;dB/decade (6.02&nbsp;dB/octave), the same slope as a first-order RC or RL low-pass filter. Brownian noise is not named for it suggesting the colour brown but instead for Brownian (&ldquo;random walk&rdquo;) motion.</p>
                         <p>Various levels of clipping are also available for pink and Brownian noise.</p>
                     </td>
                 </tr>
