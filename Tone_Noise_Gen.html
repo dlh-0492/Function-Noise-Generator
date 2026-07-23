@@ -310,25 +310,27 @@
                     /**
                      * Generate white noise
                      */
+                    let white = 0;
                     let node = this.createScriptProcessor(bufferSize, b, r);
                     node.onaudioprocess = function(e) {
                         let output = e.outputBuffer.getChannelData(0);
 
                         for (let i = 0; i < bufferSize; i++)
                         {
-                            let white = Math.random() * 2 - 1;
+                            let w = Math.random() * 2 - 1;
                             switch (white_type)
                             {
                                 case 1:
-                                    output[i] = ((white >= 0) ? 1 : -1);
+                                    white = ((w >= 0) ? 0.5773502691896257645 : -0.5773502691896257645);
                                 break;
                                 case 2:
-                                    output[i] = ((white < -1 / 3) ? -1 : ((white < 1 / 3) ? 0 : 1));
+                                    white = ((w < -1 / 3) ? -0.816496580927726 : ((w < 1 / 3) ? 0 : 0.816496580927726));
                                 break;
                                 default:
-                                    output[i] = white;
+                                    white = w;
                                 break;
                             }
+                            output[i] = white;
                         }
                     };
 
@@ -339,7 +341,7 @@
                     /**
                      * Generate pink noise
                      */
-                    let a0 = 0, a1 = 0, a2 = 0, a3 = 0, a4 = 0, a5 = 0, a6 = 0, s = 0;
+                    let a0 = 0, a1 = 0, a2 = 0, a3 = 0, a4 = 0, a5 = 0, a6 = 0, s = 0, white = 0;
                     const sclr = Math.sqrt(2000 / actx.sampleRate); // Compensate for gain
                     let node = this.createScriptProcessor(bufferSize, b, r);
                     node.onaudioprocess = function(e) {
@@ -357,7 +359,27 @@
                              * frequency (i.e. the Nyquist frequency), but my implementation scales the output level down such
                              * that unity gain occurs at 1 kHz instead.
                              */
-                            let white = Math.random() * 2 - 1;
+                            let w = Math.random() * 2 - 1;
+                            switch (white_type)
+                            {
+                                case 1:
+                                    /**
+                                     * With bi-state white noise used as the input, the peak amplitude needs to be multiplied
+                                     * by 1/sqrt(3) to prevent clipping.
+                                     */
+                                    white = ((w >= 0) ? 0.5773502691896257645 : -0.5773502691896257645);
+                                break;
+                                case 2:
+                                    /**
+                                     * With tri-state white noise used as the input, the peak amplitude needs to be multiplied
+                                     * by sqrt(2/3) to prevent clipping.
+                                     */
+                                    white = ((w < -1 / 3) ? -0.816496580927726 : ((w < 1 / 3) ? 0 : 0.816496580927726));
+                                break;
+                                default:
+                                    white = w;
+                                break;
+                            }
                             a0 = 0.99886 * a0 + white * 0.0555179;
                             a1 = 0.99332 * a1 + white * 0.0750759;
                             a2 = 0.96900 * a2 + white * 0.1538520;
@@ -401,7 +423,20 @@
 
                         for (let i = 0; i < bufferSize; i++)
                         {
-                            let white = Math.random() * 2 - 1;
+                            let w = Math.random() * 2 - 1;
+                            switch (white_type)
+                            {
+                                case 1:
+                                    white = ((w >= 0) ? 1 : -1);
+                                break;
+                                case 2:
+                                    white = ((w < -1 / 3) ? -1 : ((w < 1 / 3) ? 0 : 1));
+                                break;
+                                default:
+                                    white = w;
+                                break;
+                            }
+
                             let z0 = leakage * s - white * scaling;
                             let z1 = leakage * s + white * scaling;
                             s = ((Math.abs(z1) > 1.0) ? z0 : z1);
@@ -658,7 +693,7 @@
                     noiseNode.gain.value = this.value / this.max * MAX_GAIN;
                 });
 
-                $("#sound_srate").html(actx.sampleRate);
+                $("#sound_srate").html(`${actx.sampleRate}&nbsp;Hz`);
                 $("#freq").val("440");
                 change_tuning("a440");
 
@@ -926,7 +961,7 @@
                     </td>
                 </tr>
                 <tr>
-                    <td colspan="8" style="height: 28px;">Operating Sample Rate: <span id="sound_srate"></span> Hz</td>
+                    <td colspan="8" style="height: 28px;">Operating Sample Rate: <span id="sound_srate"></span></td>
                 </tr>
                 <tr class="desc">
                     <td colspan="8">
